@@ -6,7 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -52,9 +54,12 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.IconButton
+
+
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 
 class MainActivity : ComponentActivity() {
@@ -178,7 +183,7 @@ fun CarruselHeaderItem(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth().height(130.dp),
+                .fillMaxWidth().height(140.dp),
 
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -189,8 +194,8 @@ fun CarruselHeaderItem(
             ) {
                 Text(
                     text = data.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.82f),
 
                 )
                 Text(
@@ -225,15 +230,21 @@ fun CarruselHeaderItem(
 
 @Composable
 fun Principal(){
+    // La lista se declara aquí para que sea accesible para todo el Composable.
+    val items = listOf(
+        contentHeaderCarrusel(1, "Productos recién llegados", "35 % de dsct...", R.drawable.biker_header, "Compra ahora"),
+        contentHeaderCarrusel(2, "Otro Título", "Otra descripción", R.drawable.biker_header, "Ver más")
+    )
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
+        var currentPage by remember { mutableStateOf(0) }
         Column(modifier = Modifier.padding(horizontal = 19.dp)) {
             Row (
                 modifier = Modifier
                     .fillMaxWidth().
                     height(56.dp),
-
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -251,10 +262,8 @@ fun Principal(){
             LazyRow (
                 modifier = Modifier.fillMaxWidth()
             ){
-                items(listOf(
-                    contentHeaderCarrusel(1, "Productos recién llegados", "35 % de dsct...", R.drawable.biker_header, "Compra ahora"),
-                    contentHeaderCarrusel(2, "Otro Título", "Otra descripción", R.drawable.biker_header, "Ver más")
-                )) { item ->
+                // El LazyRow ahora usa la lista que declaraste arriba.
+                items(items) { item ->
                     CarruselHeaderItem(
                         data = item,
                         onButtonClick = {},
@@ -262,7 +271,154 @@ fun Principal(){
                     )
                 }
             }
+            // Aquí puedes ver los indicadores de paginación
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                // Aquí usamos la lista 'items' que ahora es accesible
+                items.forEachIndexed { index, _ ->
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(
+                                color = if (index == currentPage) MaterialTheme.colorScheme.onBackground else Color.Gray.copy(0.7f),
+                                shape = CircleShape
+                            )
+                            .padding(horizontal = 4.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                }
+            }
         }
+        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(modifier = Modifier.fillMaxWidth().height(9.dp).background(Color(0xFFF2E7E7)))
+
+        Row (
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 19.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Text(
+                text = "Categorías",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                )
+            Text(
+                text = "Ver todo",
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        Row (
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 19.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Column () {
+                IconButton(
+                    onClick = { /* Acción al hacer clic */ },
+                    modifier = Modifier
+                        .size(74.dp)
+                        .background(color = MaterialTheme.colorScheme.tertiary.copy(0.12f), shape = CircleShape),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.accesorios),
+                        contentDescription = "Icono de accesorios",
+                        )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Accesorios",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Column (
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                IconButton(
+                    onClick = { /* Acción al hacer clic */ },
+                    modifier = Modifier
+                        .size(74.dp)
+                        .background(color = MaterialTheme.colorScheme.tertiary.copy(0.12f), shape = CircleShape),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.filtros),
+                        contentDescription = "Icono de accesorios",
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Filtros",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Column (horizontalAlignment = Alignment.CenterHorizontally) {
+                IconButton(
+                    onClick = { /* Acción al hacer clic */ },
+                    modifier = Modifier
+                        .size(74.dp)
+                        .background(color = MaterialTheme.colorScheme.tertiary.copy(0.12f), shape = CircleShape),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.aceites),
+                        contentDescription = "Icono de accesorios",
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Accesorios",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Column (horizontalAlignment = Alignment.CenterHorizontally) {
+                IconButton(
+                    onClick = { /* Acción al hacer clic */ },
+                    modifier = Modifier
+                        .size(74.dp)
+                        .background(color = MaterialTheme.colorScheme.tertiary.copy(0.12f), shape = CircleShape),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.frenos),
+                        contentDescription = "Icono de accesorios",
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Frenos",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+
+        }
+        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(modifier = Modifier.fillMaxWidth().height(9.dp).background(Color(0xFFF2E7E7)))
+        Text(
+            modifier = Modifier.padding(horizontal = 19.dp, vertical = 12.dp),
+            text = "Categorías",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+
     }
 }
 
@@ -272,7 +428,6 @@ fun Principal(){
 @Composable
 fun PrincipalPreview() {
     JhomilMotorsShopTheme {
-
         Principal()
 
     }
