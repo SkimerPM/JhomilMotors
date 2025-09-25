@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -85,11 +86,16 @@ private fun OrderCard(order: Order, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp, // El tamaño de la sombra
+                shape = MaterialTheme.shapes.large, // La misma forma que la Card
+                spotColor = MaterialTheme.colorScheme.onBackground, // Color principal de la sombra
+                ambientColor = MaterialTheme.colorScheme.onBackground // Color ambiental de la sombra
+            )
             .clickable { onClick() }
             .height(130.dp),
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
         Row(
             modifier = Modifier.padding(14.dp) .height(130.dp),
@@ -164,7 +170,8 @@ fun HistorialScreen(navController: NavController) {
                 text = "Mis Pedidos",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.weight(1f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.width(48.dp))
         }
@@ -205,7 +212,7 @@ fun HistorialScreen(navController: NavController) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, )
 @Composable
 fun HistorialScreenPreview() {
     JhomilMotorsShopTheme {
