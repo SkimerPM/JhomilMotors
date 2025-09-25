@@ -66,6 +66,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.Payment.AditionalCostsSummary
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.Payment.PaymentMethodsScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.checkout.CheckoutScreen
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 
 class MainActivity : ComponentActivity() {
@@ -231,7 +234,7 @@ fun ProductItem(product: Product) {
                         .size(32.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.shopping_cart),
+                        painter = painterResource(id = R.drawable.filter_icon),
                         contentDescription = "Agregar al carrito",
                     )
                 }
@@ -368,16 +371,18 @@ fun Principal(){
         contentHeaderCarrusel(1, "Productos recién llegados", "35 % de dsct...", R.drawable.biker_header, "Compra ahora"),
         contentHeaderCarrusel(2, "Otro Título", "Otra descripción", R.drawable.biker_header, "Ver más")
     )
+
     val offerProducts = listOf(
-        Product(1, R.drawable.motul_oil, "7100 Aceite motor ...", 46.00, 53.00, "50 + vendidos"),
-        Product(2, R.drawable.motul_oil, "7100 Aceite motor ...", 46.00, 53.00, "50 + vendidos"),
-        Product(3, R.drawable.motul_oil, "7100 Aceite motor ...", 46.00, 53.00, "50 + vendidos"),
+        Product(1, R.drawable.logo_jhomil, "7100 Aceite motor ...", 46.00, 53.00, "50 + vendidos"),
+        Product(2, R.drawable.logo_jhomil, "7100 Aceite motor ...", 46.00, 53.00, "50 + vendidos"),
+        Product(3, R.drawable.logo_jhomil, "7100 Aceite motor ...", 46.00, 53.00, "50 + vendidos"),
     )
     val mostPurchasedProducts = listOf(
-        Product(1, R.drawable.motul_oil, "7100 Aceite motor ...", 26.00, originalPrice = null, "40 + vendidos"),
-        Product(2, R.drawable.motul_oil, "7100 Aceite motor ...", 67.00, originalPrice = null, "20 + vendidos"),
-        Product(3, R.drawable.motul_oil, "7100 Aceite motor ...", 90.00, originalPrice = null, "70 + vendidos"),
+        Product(1, R.drawable.logo_jhomil, "7100 Aceite motor ...", 26.00, originalPrice = null, "40 + vendidos"),
+        Product(2, R.drawable.logo_jhomil, "7100 Aceite motor ...", 67.00, originalPrice = null, "20 + vendidos"),
+        Product(3, R.drawable.logo_jhomil, "7100 Aceite motor ...", 90.00, originalPrice = null, "70 + vendidos"),
     )
+
     Column(
         modifier = Modifier.fillMaxSize()
         .verticalScroll(scrollState)
