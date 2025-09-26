@@ -1,5 +1,7 @@
 package com.jhomilmotors.jhomilmotorsfff.ui.theme
 
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 //val RedPrimary = Color(0xFF7E021A)
@@ -27,3 +29,5 @@ val SurfaceDark = Color(0xFF1E1E1E)       // Cards / secciones
 val OnBackgroundDark = Color(0xFFEAEAEA)  // Texto principal
 val OnSurfaceDark = Color(0xFFCCCCCC)     // Texto secundario
 val AccentDark = Color(0xFF5C8DFF)        // Azul acento
+
+
