@@ -1,5 +1,6 @@
 package com.jhomilmotors.jhomilmotorsfff.ui.components
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -11,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -27,7 +29,8 @@ fun BottomNavigationBar(navController: NavController) {
     )
 
     NavigationBar(
-        containerColor = Color(0xFF1D428A)
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 0.dp
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
@@ -44,14 +47,19 @@ fun BottomNavigationBar(navController: NavController) {
                         restoreState = true
                     }
                 },
-                icon = { Icon(painterResource(id = item.icon), contentDescription = item.title, tint = Color.White) },
+                icon = { Icon(painterResource(id = item.icon), contentDescription = item.title) },
                 label = { Text(text = item.title) },
                 colors = NavigationBarItemDefaults.colors(
+                    // El color del contenido (ícono y texto) viene de 'onSurfaceVariant'
                     selectedIconColor = Color.White,
                     selectedTextColor = Color.White,
+
+                    // Los no seleccionados son una versión semitransparente
                     unselectedIconColor = Color.White.copy(alpha = 0.6f),
                     unselectedTextColor = Color.White.copy(alpha = 0.6f),
-                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+
+                    // El indicador (la píldora de fondo) también usa un color derivado
+                    indicatorColor = Color.White.copy(alpha = 0.15f)
                 )
             )
         }

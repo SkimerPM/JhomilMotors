@@ -120,6 +120,9 @@ private val DarkColorScheme = darkColorScheme(
     surface = SurfaceDark,
     onSurface = OnSurfaceDark,
 
+    surfaceVariant = SurfaceDark, //navbar
+    onSurfaceVariant = Color.White,
+
     outline = OnSurfaceDark.copy(alpha = 0.4f),
     outlineVariant = OnSurfaceDark.copy(alpha = 0.2f),
 
@@ -141,6 +144,9 @@ private val LightColorScheme = lightColorScheme(
 
     surface = SurfaceLight,
     onSurface = OnSurfaceLight,
+
+    surfaceVariant = BluePrimary, //navbar
+    onSurfaceVariant = Color.White,
 
     outline = OnSurfaceLight.copy(alpha = 0.3f),
     outlineVariant = OnSurfaceLight.copy(alpha = 0.15f),
