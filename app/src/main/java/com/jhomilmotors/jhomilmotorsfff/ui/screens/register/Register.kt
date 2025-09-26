@@ -1,4 +1,5 @@
-package com.jhomilmotors.jhomilmotorsfff.ui.screens.login
+package com.jhomilmotors.jhomilmotorsfff.ui.screens.register
+
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -36,9 +37,6 @@ import androidx.compose.ui.unit.dp
 import com.jhomilmotors.jhomilmotorsfff.R
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 
-// Aquí deberás reemplazar R.drawable.top_image_login y R.drawable.googl_logo con la ubicación real
-// de tus recursos.
-
 @Composable
 fun LoginScreen() {
     Surface(
@@ -66,14 +64,14 @@ fun LoginScreen() {
                     .padding(horizontal = 35.dp),
             ) {
                 Text(
-                    text = "Inicio de Sesión",
+                    text = "Crea tu cuenta",
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(17.dp))
                 Text(
-                    text = "Inicia Sesión con tu cuenta de JhomilShop",
+                    text = "Regístrate para empezar a comprar en Jhomil Motors.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -112,7 +110,7 @@ fun LoginScreen() {
                 TextField(
                     value = "",
                     onValueChange = {},
-                    placeholder = { Text("introduce tu contraseña aquí", color = MaterialTheme.colorScheme.onSurface.copy(0.6f)) },
+                    placeholder = { Text("introduce una contraseña segura", color = MaterialTheme.colorScheme.onSurface.copy(0.6f)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(62.dp),
@@ -148,8 +146,8 @@ fun LoginScreen() {
                     )
                 ) {
                     Text(
-                        text = "Iniciar Sesión",
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        text = "Registrarse",
+                        color = MaterialTheme.colorScheme.background,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -176,6 +174,23 @@ fun LoginScreen() {
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "¿Ya tienes una cuenta?",
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Iniciar sesión",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {},
                     modifier = Modifier
@@ -193,23 +208,7 @@ fun LoginScreen() {
                             .width(30.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "¿No tienes una cuenta?",
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Registrarse",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+
             }
         }
     }
