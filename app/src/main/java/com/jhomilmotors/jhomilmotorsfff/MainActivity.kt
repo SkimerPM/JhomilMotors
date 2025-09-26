@@ -8,14 +8,21 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 
 import androidx.compose.runtime.Composable
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.jhomilmotors.jhomilmotorsfff.navigation.AppNavigation
+import com.jhomilmotors.jhomilmotorsfff.ui.components.BottomNavigationBar
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.DetailsProduct.DetailsProductoScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.cart.CartScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.login.LoginScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.profile.ProfileScreen
 
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 
@@ -30,7 +37,9 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .padding(innerPadding)
                     ) {
-                        DetailsProductoScreen()
+                        //Greeting("Grupo JhomilMotors")
+                        AppEntry()
+
                     }
                 }
             }
@@ -38,6 +47,21 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+
+@Composable
+fun AppEntry() {
+
+    JhomilMotorsShopTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            // (NavHost + BottomBar).
+            AppNavigation()
+        }
+    }
+}
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
