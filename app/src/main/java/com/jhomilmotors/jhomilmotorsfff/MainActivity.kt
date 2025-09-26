@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .padding(innerPadding)
                     ) {
-                        Principal()
+                        CheckoutScreen()
                     }
                 }
             }
