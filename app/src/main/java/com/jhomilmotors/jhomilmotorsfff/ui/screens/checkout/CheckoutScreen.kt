@@ -1,6 +1,4 @@
 package com.jhomilmotors.jhomilmotorsfff.ui.screens.checkout
-
-
 import androidx.compose.animation.core.copy
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -54,42 +52,34 @@ import com.jhomilmotors.jhomilmotorsfff.R
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.Payment.AditionalCostsSummary
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 
+
 @Composable
 fun CheckoutScreen() {
     var selectedShippingOption by remember { mutableStateOf(ShippingOption.PICKUP) }
-
-
-
-    // Valores de ejemplo para los precios
     val subtotal = 120.50
     val shippingCost = if (selectedShippingOption == ShippingOption.DELIVERY) 15.00 else 0.00
     val total = subtotal + shippingCost
     val Descuento = 1.00
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF2F2F2))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Header()
         AddressSection()
         Direction()
         ShippingSection()
-
-        // Llamadas a las opciones de vnvío
         FirstShippingOptions(
             isSelected = selectedShippingOption == ShippingOption.PICKUP,
             onOptionSelected = { selectedShippingOption = ShippingOption.PICKUP }
         )
-
         SecondShippingOptions(
             isSelected = selectedShippingOption == ShippingOption.DELIVERY,
             onOptionSelected = { selectedShippingOption = ShippingOption.DELIVERY }
         )
-
         Spacer(modifier = Modifier.width(250.dp))
-
         CheckoutSummary(subtotal, shippingCost, total, Descuento)
-
         RealizarOrdenButton(onClick={
             println("Pedido Realizado")
         })
@@ -109,7 +99,7 @@ fun Header() {
             imageVector = Icons.Default.ArrowBack,
             contentDescription = "Volver",
             modifier = Modifier.padding(start = 16.dp),
-            tint = Color.Black
+            tint = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = "Checkout",
@@ -117,7 +107,7 @@ fun Header() {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
@@ -131,7 +121,7 @@ fun AddressSection() {
         shape = RoundedCornerShape(2.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -148,7 +138,7 @@ fun AddressSection() {
                 Icon(
                     painter = painterResource(id = R.drawable.location_icon),
                     contentDescription = "Localizador icono",
-                    tint = Color(0xFF7E021A)
+                    tint = MaterialTheme.colorScheme.secondary
 
                 )
                 Spacer(modifier = Modifier.width(10.dp))
@@ -156,18 +146,11 @@ fun AddressSection() {
                     text = "Dirección",
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.5.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
             }
-
-
-            // Icono de pin de ubicación
-            // Textos de dirección
-            // Botón Editar
-
             EditButton(onClick = {
-
             })
         }
 
@@ -178,7 +161,7 @@ fun AddressSection() {
 @Composable
 fun EditButton(onClick: () -> Unit) {
     val cornerRadius = 10.dp
-    val borderColor = Color.Gray
+    val borderColor =MaterialTheme.colorScheme.outline
     val borderWidth = 0.5.dp
     TextButton(
         onClick = onClick,
@@ -191,7 +174,7 @@ fun EditButton(onClick: () -> Unit) {
             .padding(horizontal = 5.dp),
             shape = RoundedCornerShape(cornerRadius),
         colors = ButtonDefaults.textButtonColors(
-            contentColor = Color(0xFF0D224B)
+            contentColor = MaterialTheme.colorScheme.onSurface
         )
     ){
         Row (
@@ -225,7 +208,7 @@ fun Direction(){
         shape = RoundedCornerShape(2.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -240,22 +223,22 @@ fun Direction(){
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text("Flor Suarez (+51 999 999 999)",
-                    color = Color.Black)
+                    color= MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Los Olivos #34 Mz2 Lt4",
-                    color = Color.Black)
+                    color= MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text("Chepén",
-                    color = Color.Black)
+                    color= MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text("La Libertad",
-                    color = Color.Black)
+                    color= MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text("Perú, 1111",
-                    color = Color.Black)
+                    color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(10.dp))
 
 
@@ -280,7 +263,7 @@ fun   ShippingSection() {
         shape = RoundedCornerShape(2.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -298,7 +281,7 @@ fun   ShippingSection() {
                 Icon(
                     painter = painterResource(id = R.drawable.shipping_icon),
                     contentDescription = "Localizador icono",
-                    tint = Color(0xFF0D224B)
+                    tint = MaterialTheme.colorScheme.primary
 
                 )
                 Spacer(modifier = Modifier.width(10.dp))
@@ -306,7 +289,7 @@ fun   ShippingSection() {
                     text = "Opciones de envio",
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.5.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
             }
@@ -336,10 +319,9 @@ fun FirstShippingOptions(
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 2.dp),
         colors = CardDefaults.cardColors(
-            // Cambia el color de fondo si está seleccionado para mejor feedback
-            containerColor = if (isSelected) Color(0xFFE3F2FD)   else Color.White
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surface else Color.Gray
         ),
-        border = if (isSelected) BorderStroke(1.dp, Color(0xFF84AEFF) ) else null
+        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary ) else null
     ) {
         Row(
             modifier = Modifier
@@ -351,7 +333,7 @@ fun FirstShippingOptions(
             Text(
                 text = "Recojo en tienda",
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (isSelected)Color(0xFF1D428A)  else MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
 
@@ -383,33 +365,31 @@ fun SecondShippingOptions(
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color(0xFFE3F2FD) else Color.White
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surface else Color.Gray
         ),
-        border = if (isSelected) BorderStroke(1.5.dp, Color(0xFFE3F2FD) ) else null
+        border = if (isSelected) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary ) else null
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Text(
                 text = "Envío a domicilio",
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (isSelected) Color(0xFF1D428A)  else MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
             RadioButton(
                 selected = isSelected,
                 onClick = null, // El clic se maneja en la Card
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = Color(0xFF3E6AD3)
+                    selectedColor = MaterialTheme.colorScheme.primary,
+                    unselectedColor = MaterialTheme.colorScheme.primary
                 )
             )
             //Spacer(Modifier.width(16.dp))
-
         }
     }
 }
@@ -428,7 +408,7 @@ fun CheckoutSummary(subtotal: Double, shippingCost: Double, total: Double, Descu
         shape = RoundedCornerShape(2.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -437,7 +417,8 @@ fun CheckoutSummary(subtotal: Double, shippingCost: Double, total: Double, Descu
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Resumen del Pedido", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
+            Text("Resumen del Pedido", fontWeight = FontWeight.Bold, fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.height(8.dp))
 
             // Subtotal
@@ -460,8 +441,6 @@ fun CheckoutSummary(subtotal: Double, shippingCost: Double, total: Double, Descu
     }
 }
 
-// --------------------------------------------------------------------------------------------------
-
 @Composable
 fun PriceRow(label: String, amount: Double, isTotal: Boolean = false) {
     val isDiscountRow = label == "Cupón aplicado"
@@ -469,9 +448,9 @@ fun PriceRow(label: String, amount: Double, isTotal: Boolean = false) {
 
 
     val textColor = when {
-        hasActiveDiscount -> Color(0xFF7E021A)
-        isTotal -> Color(0xFF1D428A)
-        else -> Color.Black
+        hasActiveDiscount -> MaterialTheme.colorScheme.secondary
+        isTotal -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurface
     }
 
     // Formato del texto para el monto
@@ -555,5 +534,6 @@ fun RealizarOrdenButton(onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun CheckoutScreenPreview() {
+    JhomilMotorsShopTheme (darkTheme = false){
     CheckoutScreen()
-}
+}}

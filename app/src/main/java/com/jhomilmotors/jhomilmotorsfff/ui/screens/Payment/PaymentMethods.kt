@@ -63,7 +63,7 @@ fun PaymentMethodsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF2F2F2))
+            .background(color = MaterialTheme.colorScheme.background)
     ) {
         Header()
 
@@ -113,7 +113,7 @@ fun Header() {
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(start = 16.dp),
-            tint = Color.Black,
+            tint = MaterialTheme.colorScheme.onSurface
 
         )
 
@@ -126,7 +126,7 @@ fun Header() {
                 .fillMaxWidth()
                 .align(Alignment.Center),
             textAlign = TextAlign.Center,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onBackground
         )
 
 
@@ -139,7 +139,7 @@ fun Header() {
             .fillMaxWidth()
             .padding(bottom = 20.dp),
         textAlign = TextAlign.Center,
-        color = Color.Black,
+        color = MaterialTheme.colorScheme.onBackground,
 
     )
 }
@@ -153,10 +153,10 @@ fun PaymentOptionCard(
     iconPainter: Painter,
     iconTint: Color? = null
 ) {
-
-    val borderColor = if (isSelected) Color(0xFF1D428A)
-    else  Color.Gray
-    val backgroundColor = if (isSelected )Color(0xFFE3F2FD)    else Color.White
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface
+    val contentColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+    val subtitleColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
 
     Card(
         modifier = Modifier
@@ -190,7 +190,7 @@ fun PaymentOptionCard(
                     modifier = Modifier
                         .width(1.dp)
                         .height(35.dp)
-                        .background(Color.LightGray)
+                        .background(MaterialTheme.colorScheme.onSurface)
                 )
 
 
@@ -200,11 +200,12 @@ fun PaymentOptionCard(
                         text = title,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black )
+                        color = contentColor
+                    )
                     Text(
                         text = subtitle,
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = subtitleColor
                     )
                 }
             }
@@ -214,8 +215,9 @@ fun PaymentOptionCard(
                 selected = isSelected,
                 onClick = null,
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = Color(0xFF167AC9),
-                    unselectedColor = Color.Gray
+                    selectedColor = MaterialTheme.colorScheme.primary,
+                    unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+
                 )
             )
         }
@@ -255,12 +257,12 @@ fun AditionalCostsSummary(previousTotal: Double) {
                 Text(
                     text = "Costos adicionales",
                     fontSize = 16.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "S/ %.2f".format(aditionalCost),
                     fontSize = 16.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
@@ -282,13 +284,13 @@ fun AditionalCostsSummary(previousTotal: Double) {
                     text = "TOTAL A PAGAR",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "S/ %.2f".format(finalTotal),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -299,9 +301,8 @@ fun AditionalCostsSummary(previousTotal: Double) {
 fun RealizarOrdenButton(onClick: () -> Unit) {
 
     val gradientColors = listOf(
-        Color(0xFF1D428A),
-        Color(0xFF7E021A)  ,
-
+        MaterialTheme.colorScheme.primary, // Tu azul oscuro
+        MaterialTheme.colorScheme.secondary // Tu rojo
     )
 
     Button(
@@ -344,5 +345,8 @@ fun RealizarOrdenButton(onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun PaymentMethodsPreview() {
-    PaymentMethodsScreen()
+    JhomilMotorsShopTheme (darkTheme = true){
+        PaymentMethodsScreen()
+    }
+
 }
