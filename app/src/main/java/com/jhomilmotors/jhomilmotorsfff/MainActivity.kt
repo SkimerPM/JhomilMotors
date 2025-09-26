@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.DetailsProduct.DetailsProductoScreen
 
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 
@@ -29,7 +30,7 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .padding(innerPadding)
                     ) {
-                        Greeting("Grupo JhomilMotors")
+                        DetailsProductoScreen()
                     }
                 }
             }
