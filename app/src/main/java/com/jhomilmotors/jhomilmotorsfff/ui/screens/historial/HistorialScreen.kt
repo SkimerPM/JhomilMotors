@@ -164,7 +164,7 @@ fun HistorialScreen(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { /* TODO: navController.popBackStack() */ }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", modifier = Modifier.size(44.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint= MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(44.dp))
             }
             Text(
                 text = "Mis Pedidos",
