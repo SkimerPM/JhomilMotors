@@ -1,5 +1,8 @@
 package com.jhomilmotors.jhomilmotorsfff.ui.screens.profile
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +20,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,16 +45,90 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.jhomilmotors.jhomilmotorsfff.R
-import com.jhomilmotors.jhomilmotorsfff.ui.screens.confirmacion.GradientButton
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
+
+
+// --- LÓGICA DE INTENTS IMPLÍCITOS ---
+
+fun callSupport(context: Context, phoneNumber: String){
+    val dialIntent= Intent(Intent.ACTION_DIAL).apply {
+        data= Uri.parse("tel:$phoneNumber")
+    }
+    if (dialIntent.resolveActivity(context.packageManager)!= null){
+        ContextCompat.startActivity(context, dialIntent, null)
+    }
+}
+
+fun contactViaWhatsapp(context: Context, phoneNumber: String, message: String){
+    val url = "https://wa.me/$phoneNumber?text=${Uri.encode(message)}"
+    val whatsappIntent = Intent(Intent.ACTION_VIEW).apply {
+        data= Uri.parse(url)
+    }
+    if (whatsappIntent.resolveActivity(context.packageManager) != null){
+        ContextCompat.startActivity(context, whatsappIntent, null)
+    }
+}
+
+fun sendEmailToSupport(context: Context, emailAddress: String, subject: String) {
+    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:")
+        putExtra(Intent.EXTRA_EMAIL, arrayOf(emailAddress))
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+    }
+    if (emailIntent.resolveActivity(context.packageManager) != null) {
+        ContextCompat.startActivity(context, emailIntent, null)
+    }
+}
+
+// --- COMPONENTE DE OPCIÓN DE CONTACTO ---
+
+@Composable
+fun ContactOptionItem(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit
+){
+    Row (
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 12.dp, horizontal = 24.dp)
+    ){
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(Modifier.width(16.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+        // Ícono de flecha (KeyboardArrowRight)
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = Color.LightGray
+        )
+    }
+    Divider(modifier = Modifier.padding(horizontal = 24.dp), color = Color.LightGray)
+}
+
+// --- OTROS COMPONENTES ---
 
 @Composable
 fun GradientButton(
@@ -58,10 +140,8 @@ fun GradientButton(
 ) {
     Box(
         modifier = modifier
-            // 2. USAMOS 'ALPHA' PARA CAMBIAR LA APARIENCIA SI ESTÁ DESHABILITADO
             .alpha(if (enabled) 1f else 0.5f)
             .background(gradient, shape = MaterialTheme.shapes.medium)
-            // 3. USAMOS 'ENABLED' EN EL MODIFICADOR CLICKABLE
             .clickable(enabled = enabled) { onClick() },
         contentAlignment = Alignment.Center,
     ) {
@@ -73,7 +153,6 @@ fun GradientButton(
     }
 }
 
-//micro composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProfileTextField(
@@ -97,15 +176,12 @@ private fun ProfileTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
-            enabled = enabled, // El estado del TextField depende de este parámetro
+            enabled = enabled,
             singleLine = true,
             shape = MaterialTheme.shapes.medium,
             colors = TextFieldDefaults.colors(
-                // Color del fondo cuando el campo está desenfocado (el estado normal en tu "modo vista")
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                // Color del fondo cuando el campo está enfocado (cuando el usuario está escribiendo)
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
-                // Color para los campos que nunca se pueden editar (como el de correo)
                 disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
                 disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 disabledIndicatorColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
@@ -114,20 +190,30 @@ private fun ProfileTextField(
     }
 }
 
-//principal
+// --- PANTALLA PRINCIPAL ---
+
 @Composable
 fun ProfileScreen(navController: NavController) {
-    // --- ESTADO DE LA UI ---
-    // Esta variable controla si estamos en "Modo Vista" o "Modo Edición"
-    var isEditMode by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-    // Variables de estado para cada campo del formulario
-    // En el futuro, estos valores vendrán del ViewModel
+    // Datos de soporte (Números y correos reales de Jhomil Motors)
+    val supportPhone = "51922309105"
+    val supportEmail = "fatima.rodriguez@tecsup.edu.pe"
+    val whatsappMessage = "Hola Jhomil Motors, necesito ayuda con mi pedido."
+
+    var isEditMode by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("Omar Enrique") }
-    var lastName by remember { mutableStateOf("Castañeda Deza xd") }
-    val email = "omar.c@gmail.com" // El email no se edita, así que no necesita estado
+    var lastName by remember { mutableStateOf("Castañeda Deza") }
+    val email = "omar.c@gmail.com"
     var phone by remember { mutableStateOf("912 345 678") }
     var address by remember { mutableStateOf("Av. Nicolás de Piérola N° 345") }
+
+    val primaryGradientBrush = Brush.horizontalGradient(
+        colors = listOf(Color(0xFF20376D), Color(0xFF3E6AD3))
+    )
+    val errorGradientBrush = Brush.horizontalGradient(
+        colors = listOf(Color(0xFF7F1736), Color(0xFFCB1332))
+    )
 
     Column(
         modifier = Modifier
@@ -152,16 +238,10 @@ fun ProfileScreen(navController: NavController) {
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.width(48.dp)) // Espacio para centrar el título
+            Spacer(modifier = Modifier.width(48.dp))
         }
 
-        // --- Contenido Principal de la Pantalla ---
-        val primaryGradientBrush = Brush.horizontalGradient(
-            colors = listOf(Color(0xFF20376D), Color(0xFF3E6AD3))
-        )
-        val errorGradientBrush = Brush.horizontalGradient(
-            colors = listOf(Color(0xFF7F1736), Color(0xFFCB1332))
-        )
+        // --- Contenido Principal Desplazable ---
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -174,62 +254,39 @@ fun ProfileScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.End
             ) {
                 OutlinedButton(
-                    onClick = { isEditMode = !isEditMode } // Cambia el estado de edición
+                    onClick = { isEditMode = !isEditMode }
                 ) {
+                    // Nota: Asumiendo que 'ic_edit' existe en tu drawable
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_edit), // Necesitarás este ícono
+                        painter = painterResource(id = R.drawable.ic_edit),
                         contentDescription = "Editar",
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Editar")
+                    Text(text = if (isEditMode) "Cancelar" else "Editar")
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
 
             // --- Campos del Formulario ---
-            ProfileTextField(
-                label = "Nombres",
-                value = name,
-                onValueChange = { name = it },
-                enabled = isEditMode // Se activa/desactiva con el estado
-            )
-            ProfileTextField(
-                label = "Apellidos",
-                value = lastName,
-                onValueChange = { lastName = it },
-                enabled = isEditMode
-            )
-            ProfileTextField(
-                label = "Correo electrónico",
-                value = email,
-                onValueChange = {},
-                enabled = false // El correo nunca es editable
-            )
-            ProfileTextField(
-                label = "Teléfono",
-                value = phone,
-                onValueChange = { phone = it },
-                enabled = isEditMode
-            )
-            ProfileTextField(
-                label = "Dirección",
-                value = address,
-                onValueChange = { address = it },
-                enabled = isEditMode
-            )
+            ProfileTextField(label = "Nombres", value = name, onValueChange = { name = it }, enabled = isEditMode)
+            ProfileTextField(label = "Apellidos", value = lastName, onValueChange = { lastName = it }, enabled = isEditMode)
+            ProfileTextField(label = "Correo electrónico", value = email, onValueChange = {}, enabled = false)
+            ProfileTextField(label = "Teléfono", value = phone, onValueChange = { phone = it }, enabled = isEditMode)
+            ProfileTextField(label = "Dirección", value = address, onValueChange = { address = it }, enabled = isEditMode)
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- Botones de Acción ---
             GradientButton(
                 text = "Guardar Cambios",
                 gradient = primaryGradientBrush,
-                enabled = isEditMode, // La lógica 'enabled' ahora funciona
+                enabled = isEditMode,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(62.dp),
                 onClick = {
-                    isEditMode = false // Vuelve al modo vista después de guardar
+                    // TODO: Lógica de guardado de datos al backend
+                    isEditMode = false
                 }
             )
 
@@ -237,16 +294,52 @@ fun ProfileScreen(navController: NavController) {
 
             GradientButton(
                 text = "Cerrar Sesión",
-                gradient = errorGradientBrush, // Usamos el nuevo degradado de error
-                enabled = true, // Este botón siempre está activo
+                gradient = errorGradientBrush,
+                enabled = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(62.dp),
                 onClick = { /* TODO: Lógica para cerrar sesión */ }
             )
+
+            // --- SECCIÓN SOPORTE Y CONTACTO (Intents) ---
+            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text = "Soporte y Contacto",
+                style = MaterialTheme.typography.bodyMedium, // Usamos headlineSmall para que quepa mejor
+                modifier = Modifier.padding(bottom = 8.dp),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            // 1. Llamada Telefónica (ACTION_DIAL)
+            ContactOptionItem(
+                icon = Icons.Default.Phone,
+                label = "Llamar a Soporte (Línea Fija)",
+                onClick = { callSupport(context, supportPhone) }
+
+            )
+
+            // 2. WhatsApp (ACTION_VIEW)
+            ContactOptionItem(
+                icon = Icons.Default.Send,
+                label = "Contactar por WhatsApp",
+                onClick = { contactViaWhatsapp(context, supportPhone, whatsappMessage) }
+            )
+
+            // 3. Correo Electrónico (ACTION_SENDTO)
+            ContactOptionItem(
+                icon = Icons.Default.Email,
+                label = "Enviar Correo Electrónico",
+                onClick = { sendEmailToSupport(context, supportEmail, "Consulta desde la App Móvil") }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
+
+
+// --- PREVIEWS ---
 
 @Preview(showBackground = true)
 @Composable
