@@ -16,6 +16,8 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.confirmacion.ConfirmationScre
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.historial.HistorialScreen
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.home.Principal
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.profile.ProfileScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.login.Login
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.register.Register
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 
 @Composable
@@ -45,7 +47,7 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = AppScreens.HomeScreen.route,
+            startDestination = AppScreens.Login.route,
             modifier = Modifier.padding(innerPadding)
         ) {
             // Aquí defines todas las pantallas que tu app puede mostrar.
@@ -63,6 +65,12 @@ fun AppNavigation() {
             }
             composable(route = AppScreens.ConfirmationScreen.route) {
                 ConfirmationScreen(navController)
+            }
+            composable(route = AppScreens.Login.route) {
+                Login(navController)
+            }
+            composable(route = AppScreens.Register.route) {
+                Register(navController)
             }
         }
     }

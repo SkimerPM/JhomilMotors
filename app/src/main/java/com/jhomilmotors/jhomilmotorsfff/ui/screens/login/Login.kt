@@ -3,6 +3,7 @@ package com.jhomilmotors.jhomilmotorsfff.ui.screens.login
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -33,14 +34,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.jhomilmotors.jhomilmotorsfff.R
+import com.jhomilmotors.jhomilmotorsfff.navigation.AppScreens
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 
 // Aquí deberás reemplazar R.drawable.top_image_login y R.drawable.googl_logo con la ubicación real
 // de tus recursos.
 
 @Composable
-fun LoginScreen() {
+fun Login(navController: NavController) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -127,7 +131,14 @@ fun LoginScreen() {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = {},
+                    onClick = {
+                        navController.navigate(AppScreens.HomeScreen.route) {
+                            // Esto es importante: borra la pantalla de login del historial.
+                            popUpTo(AppScreens.Login.route) {
+                                inclusive = true
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .background(
                             brush = Brush.horizontalGradient(
@@ -207,7 +218,11 @@ fun LoginScreen() {
                     Text(
                         text = "Registrarse",
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable {
+                            // Cuando el usuario haga clic, se ejecutará esta acción
+                            navController.navigate(AppScreens.Register.route)
+                        }
                     )
                 }
             }
@@ -220,7 +235,7 @@ fun LoginScreen() {
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun PreviewLoginScreen(){
     JhomilMotorsShopTheme{
-        LoginScreen()
+        Login(navController = rememberNavController())
     }
 }
 
@@ -229,6 +244,6 @@ fun PreviewLoginScreen(){
 @Preview(showBackground = true)
 fun PreviewLoginScreenClaro(){
     JhomilMotorsShopTheme{
-        LoginScreen()
+        Login(navController = rememberNavController())
     }
 }

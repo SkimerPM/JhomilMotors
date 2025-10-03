@@ -14,4 +14,7 @@ sealed class AppScreens(val route: String) {
     // --- Pantallas que no están en la barra de navegación ---
     object ConfirmationScreen : AppScreens("confirmation_screen")
     object CheckoutScreen : AppScreens("checkout_screen")
+    object Login : AppScreens("login")
+
+    object Register : AppScreens("register")
 }
