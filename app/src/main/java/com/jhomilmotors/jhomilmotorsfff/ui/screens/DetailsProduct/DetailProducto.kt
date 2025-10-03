@@ -17,12 +17,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons // <- Base para los iconos
-import androidx.compose.material.icons.automirrored.filled.ArrowBack // <- Icono de la flecha de volver
-import androidx.compose.material.icons.filled.KeyboardArrowDown // <- Icono de la flecha de bajar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider // Necesario para la línea de separación
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,11 +49,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
-import com.jhomilmotors.jhomilmotorsfff.R // Asumo que esta es la referencia correcta a tus recursos
+import com.jhomilmotors.jhomilmotorsfff.R
+import android.content.Context
+import android.content.Intent
+
+
+data class Producto(
+    val nombre: String,
+    val precio: String,
+    val descripcion: String,
+    val urlCompartir: String
+)
 
 
 @Composable
-fun DetailsProductoScreen() {
+fun DetailsProductoScreen(producto: Producto) {
+    val context = LocalContext.current
+
     var quantity by remember { mutableIntStateOf(1) }
     val scrollState = rememberScrollState()
 
@@ -61,107 +75,120 @@ fun DetailsProductoScreen() {
             .background(MaterialTheme.colorScheme.background)
     ){
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .background(MaterialTheme.colorScheme.background)
-            .padding(bottom = 80.dp)
-    ) {
-        Spacer(modifier = Modifier.height(18.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { /* TODO: navController.popBackStack() */ }) {
-                // CORRECCIÓN: Usar la referencia de Icons importada
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Volver",
-                    modifier = Modifier.size(44.dp),
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-            Text(
-                text = "", // Asumo que el texto del título está intencionalmente vacío
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center, // CORRECCIÓN: Usar la referencia correcta de TextAlign
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-        Spacer(modifier = Modifier.height(5.dp))
-        Divider( // Usar Divider para la línea horizontal
-            modifier = Modifier
-                .fillMaxWidth(),
-            thickness = 1.2.dp,
-            color = MaterialTheme.colorScheme.onBackground.copy(0.10f)
-        )
-
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .background(MaterialTheme.colorScheme.background)
+                .padding(bottom = 80.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.bateria_enerjet), // Reemplaza con tu imagen
-                contentDescription = "Batería Enerjet",
+            Spacer(modifier = Modifier.height(18.dp))
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Fit
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "BATERIA ENERJET 11T56 56AH 405CCA TOYOTA 11PLC",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "S/320.00",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Sección de Descripción
-        ProductSection(title = "Descripción", content = {
-            Text(
-                text = "La batería Enerjet 11T56 12V 56Ah 405CCA con 11 placas ha sido específicamente diseñada para satisfacer las necesidades energéticas de autos y camionetas Toyota.",
-                fontSize = 14.sp,
-                color = Color(0xFF666666)
-            )
-        })
-
-        // Sección Ficha Técnica
-        ProductSection(title = "Ficha Técnica", content = {
-            Column {
-                Text(text = "Voltaje: 12V", fontSize = 14.sp, color = Color(0xFF666666))
-                Text(text = "Amperaje: 56Ah", fontSize = 14.sp, color = Color(0xFF666666))
-                Text(text = "CCA: 405", fontSize = 14.sp, color = Color(0xFF666666))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { /* TODO: navController.popBackStack() */ }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Volver",
+                        modifier = Modifier.size(44.dp),
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                Text(
+                    text = "",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
-        })
-
-        // Sección Productos Relacionados
-        ProductSection(title = "Productos Relacionados", content = {
-            // Podrías poner aquí un LazyRow con imágenes de productos
-            Text(
-                text = "Lista de productos relacionados...",
-                fontSize = 14.sp,
-                color = Color(0xFF666666)
+            Spacer(modifier = Modifier.height(5.dp))
+            Divider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 1.2.dp,
+                color = MaterialTheme.colorScheme.onBackground.copy(0.10f)
             )
-        })
-        Spacer(modifier = Modifier.weight(1f))
-    }
 
-// --- Sección inferior (Cantidad y Botón) ---
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.bateria_enerjet),
+                    contentDescription = producto.nombre,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Fit
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = producto.nombre,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = producto.precio,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    IconButton(
+                        onClick = {
+                            shareProduct(context, producto.nombre, producto.urlCompartir)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Compartir Producto",
+                            modifier = Modifier.size(28.dp),
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ProductSection(title = "Descripción", content = {
+                Text(
+                    text = producto.descripcion,
+                    fontSize = 14.sp,
+                    color = Color(0xFF666666)
+                )
+            })
+
+            ProductSection(title = "Ficha Técnica", content = {
+                Column {
+                    Text(text = "Voltaje: 12V", fontSize = 14.sp, color = Color(0xFF666666))
+                    Text(text = "Amperaje: 56Ah", fontSize = 14.sp, color = Color(0xFF666666))
+                    Text(text = "CCA: 405", fontSize = 14.sp, color = Color(0xFF666666))
+                }
+            })
+
+            ProductSection(title = "Productos Relacionados", content = {
+                Text(
+                    text = "Lista de productos relacionados...",
+                    fontSize = 14.sp,
+                    color = Color(0xFF666666)
+                )
+            })
+            Spacer(modifier = Modifier.weight(1f))
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -171,7 +198,6 @@ fun DetailsProductoScreen() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Control de cantidad
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -183,7 +209,7 @@ fun DetailsProductoScreen() {
                     colors = ButtonDefaults.textButtonColors(contentColor =  MaterialTheme.colorScheme.onBackground),
                     modifier = Modifier.size(40.dp),
 
-                ) {
+                    ) {
                     Text("-", fontSize = 20.sp, fontWeight = FontWeight.Bold,  color = MaterialTheme.colorScheme.onBackground)
 
                 }
@@ -202,7 +228,6 @@ fun DetailsProductoScreen() {
                     Text("+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
             }
-            // Botón "Añadir al carrito"
             Button(
                 onClick = { /* Lógica para añadir al carrito */ },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7E021A)),
@@ -224,7 +249,6 @@ fun DetailsProductoScreen() {
     }
 }
 
-// Componente reutilizable para las secciones de descripción, ficha técnica, etc.
 @Composable
 fun ProductSection(title: String, content: @Composable (() -> Unit)? = null) {
     var expanded by remember { mutableStateOf(false) }
@@ -249,13 +273,12 @@ fun ProductSection(title: String, content: @Composable (() -> Unit)? = null) {
                 modifier = Modifier.weight(1f)
             )
             IconButton(
-                onClick = { expanded = !expanded } // Invierte el estado (abierto -> cerrado)
+                onClick = { expanded = !expanded }
             ) {
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,
                     contentDescription = if (expanded) "Cerrar" else "Expandir",
                     tint = MaterialTheme.colorScheme.onBackground,
-                    // 4. ROTACIÓN: Rota el icono 180 grados si está expandido
                     modifier = Modifier.rotate(if (expanded) 180f else 0f)
                 )
             }
@@ -265,25 +288,47 @@ fun ProductSection(title: String, content: @Composable (() -> Unit)? = null) {
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Separador para la siguiente sección
         Divider(color = Color.LightGray, thickness = 1.dp)
     }
+}
+
+
+fun shareProduct(context: Context, nombreProducto: String, urlProducto: String) {
+    val mensajeACompartir = "¡Mira qué producto encontré en Jhomil Motors! $nombreProducto. Cómpralo aquí: $urlProducto"
+
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, "Producto Interesante en Jhomil Motors")
+        putExtra(Intent.EXTRA_TEXT, mensajeACompartir)
+    }
+
+    context.startActivity(Intent.createChooser(shareIntent, "Compartir producto usando..."))
+}
+
+
+@Composable
+fun DemoProduct(): Producto {
+    return Producto(
+        nombre = "BATERIA ENERJET 11T56 56AH 405CCA TOYOTA 11PLC",
+        precio = "S/320.00",
+        descripcion = "La batería Enerjet 11T56 12V 56Ah 405CCA con 11 placas ha sido específicamente diseñada para satisfacer las necesidades energéticas de autos y camionetas Toyota.",
+        urlCompartir = "https://jhomilmotors.com/bateria/enerjet-11t56"
+    )
 }
 
 @Composable
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun PreviewDetailsProductoScreen(){
     JhomilMotorsShopTheme{
-        DetailsProductoScreen()
+        DetailsProductoScreen(producto = DemoProduct())
     }
 }
-
 
 
 @Composable
 @Preview(showBackground = true)
 fun PreviewDetailsProductoScreenClaro(){
     JhomilMotorsShopTheme{
-        DetailsProductoScreen()
+        DetailsProductoScreen(producto = DemoProduct())
     }
 }
