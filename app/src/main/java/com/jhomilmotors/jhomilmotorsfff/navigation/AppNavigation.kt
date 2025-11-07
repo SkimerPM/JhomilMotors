@@ -1,11 +1,13 @@
 package com.jhomilmotors.jhomilmotorsfff.navigation
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -19,17 +21,20 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.profile.ProfileScreen
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.login.Login
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.register.Register
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
+import com.jhomilmotors.jhomilmotorsfff.utils.TokenManager
+import com.jhomilmotors.jhomilmotorsfff.data.remote.RetrofitClient
+import com.jhomilmotors.jhomilmotorsfff.data.model.RefreshRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     Scaffold(
         bottomBar = {
-            // ... lógica para decidir si se muestra la barra ...
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
-            // --- Define aquí la lista de tus 4 rutas principales ---
             val mainScreenRoutes = listOf(
                 AppScreens.HomeScreen.route,
                 AppScreens.CartScreen.route,
@@ -37,9 +42,6 @@ fun AppNavigation() {
                 AppScreens.ProfileScreen.route
             )
 
-            // --- El "guardia de seguridad" ---
-            // Si la ruta en la que está el usuario es una de las de la lista,
-            // entonces muestra la barra de navegación.
             if (currentRoute in mainScreenRoutes) {
                 BottomNavigationBar(navController = navController)
             }
@@ -47,10 +49,13 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = AppScreens.Login.route,
+            startDestination = "session_checker",
             modifier = Modifier.padding(innerPadding)
         ) {
-            // Aquí defines todas las pantallas que tu app puede mostrar.
+            // Chequeo de sesión persistente en esta pantalla especial
+            composable("session_checker") {
+                SessionChecker(navController)
+            }
             composable(route = AppScreens.HomeScreen.route) {
                 Principal()
             }
@@ -76,10 +81,10 @@ fun AppNavigation() {
     }
 }
 
-@Preview(showSystemUi = false) // showSystemUi = true es genial para ver la app completa
+
+@Preview(showSystemUi = false)
 @Composable
 fun AppNavigationPreview() {
-    // Usamos nuestro tema para que la preview se vea con los estilos correctos
     JhomilMotorsShopTheme {
         AppNavigation()
     }

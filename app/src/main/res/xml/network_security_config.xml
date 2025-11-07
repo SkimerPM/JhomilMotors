@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Permitir HTTP solo en debug (desarrollo) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Emulador Android (localhost del host) -->
+        <domain includeSubdomains="true">10.0.2.2</domain>
+
+        <!-- Si usas dispositivo físico, agrega tu IP local -->
+        <!-- <domain includeSubdomains="true">192.168.1.100</domain> -->
+    </domain-config>
+</network-security-config>
