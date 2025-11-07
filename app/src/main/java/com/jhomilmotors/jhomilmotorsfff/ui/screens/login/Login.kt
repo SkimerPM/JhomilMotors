@@ -41,13 +41,12 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.jhomilmotors.jhomilmotorsfff.R
@@ -59,35 +58,26 @@ import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.AuthViewModel
 @Composable
 fun Login(
     navController: NavController,
-    viewModel: AuthViewModel = viewModel() // ← Inyección automática del ViewModel
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
-    // Observar los estados del ViewModel
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 
-    // SnackBar para mostrar errores
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // contexto
-    val context = LocalContext.current
-
-    // Manejar el estado de login
     LaunchedEffect(loginState) {
         when (val state = loginState) {
             is UiState.Success -> {
-                // Login exitoso: navegar a home
                 snackbarHostState.showSnackbar("¡Bienvenido!")
                 navController.navigate(AppScreens.HomeScreen.route) {
-                    // Limpiar el stack de navegación (no volver con back)
                     popUpTo(AppScreens.Login.route) { inclusive = true }
                 }
             }
             is UiState.Error -> {
-                // Mostrar error en Snackbar
                 snackbarHostState.showSnackbar(state.message)
             }
-            else -> { /* Idle o Loading, no hacer nada aquí */ }
+            else -> {}
         }
     }
 
@@ -103,7 +93,7 @@ fun Login(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()), // ← Scroll para teclado
+                    .verticalScroll(rememberScrollState()),
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.top_image_login),
@@ -137,7 +127,6 @@ fun Login(
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    // ===== Campo Correo =====
                     Text(
                         text = "Correo",
                         style = MaterialTheme.typography.bodyLarge,
@@ -146,8 +135,8 @@ fun Login(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
-                        value = email, // ← Estado del ViewModel
-                        onValueChange = viewModel::onEmailChange, // ← Actualiza ViewModel
+                        value = email,
+                        onValueChange = viewModel::onEmailChange,
                         placeholder = {
                             Text(
                                 "tu.email@ejemplo.com",
@@ -165,12 +154,11 @@ fun Login(
                             unfocusedIndicatorColor = Color.Transparent,
                         ),
                         shape = RoundedCornerShape(8.dp),
-                        enabled = loginState !is UiState.Loading // ← Deshabilitar en loading
+                        enabled = loginState !is UiState.Loading
                     )
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    // ===== Campo Contraseña =====
                     Text(
                         text = "Contraseña",
                         style = MaterialTheme.typography.bodyLarge,
@@ -179,15 +167,15 @@ fun Login(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
-                        value = password, // ← Estado del ViewModel
-                        onValueChange = viewModel::onPasswordChange, // ← Actualiza ViewModel
+                        value = password,
+                        onValueChange = viewModel::onPasswordChange,
                         placeholder = {
                             Text(
                                 "introduce tu contraseña aquí",
                                 color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
                             )
                         },
-                        visualTransformation = PasswordVisualTransformation(), // ← Ocultar texto
+                        visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(62.dp),
@@ -199,14 +187,13 @@ fun Login(
                             unfocusedIndicatorColor = Color.Transparent
                         ),
                         shape = RoundedCornerShape(8.dp),
-                        enabled = loginState !is UiState.Loading // ← Deshabilitar en loading
+                        enabled = loginState !is UiState.Loading
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Botón Iniciar Sesión =====
                     Button(
-                        onClick = { viewModel.loginUser(context) }, // ← Llamar función del ViewModel
+                        onClick = { viewModel.loginUser() },
                         modifier = Modifier
                             .background(
                                 brush = Brush.horizontalGradient(
@@ -225,10 +212,9 @@ fun Login(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent
                         ),
-                        enabled = loginState !is UiState.Loading // ← Deshabilitar en loading
+                        enabled = loginState !is UiState.Loading
                     ) {
                         if (loginState is UiState.Loading) {
-                            // Mostrar ProgressBar cuando está cargando
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
                                 color = MaterialTheme.colorScheme.onPrimary
@@ -245,7 +231,6 @@ fun Login(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Divisor "o" =====
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -269,9 +254,8 @@ fun Login(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Botón Google (deshabilitado por ahora) =====
                     Button(
-                        onClick = { /* TODO: Google Sign-In */ },
+                        onClick = { },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(62.dp),
@@ -290,7 +274,6 @@ fun Login(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Link a Registro =====
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,

@@ -22,7 +22,6 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.login.Login
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.register.Register
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 import com.jhomilmotors.jhomilmotorsfff.utils.TokenManager
-import com.jhomilmotors.jhomilmotorsfff.data.remote.RetrofitClient
 import com.jhomilmotors.jhomilmotorsfff.data.model.RefreshRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,7 +56,7 @@ fun AppNavigation() {
                 SessionChecker(navController)
             }
             composable(route = AppScreens.HomeScreen.route) {
-                Principal()
+                Principal(navController)
             }
             composable(route = AppScreens.CartScreen.route) {
                 CartScreen(navController)

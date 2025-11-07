@@ -11,12 +11,11 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.jhomilmotors.jhomilmotorsfff.R
 import com.jhomilmotors.jhomilmotorsfff.data.model.UiState
@@ -26,36 +25,28 @@ import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.AuthViewModel
 @Composable
 fun Register(
     navController: NavController,
-    viewModel: AuthViewModel = viewModel() // ← Inyección automática del ViewModel
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
-    // Observar los estados del ViewModel
     val nombre by viewModel.nombre.collectAsState()
     val apellido by viewModel.apellido.collectAsState()
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
     val registerState by viewModel.registerState.collectAsState()
 
-    // Mostrar SnackBar para errores
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // obtener contexto:
-    val context = LocalContext.current
-    // Manejar el estado de registro
     LaunchedEffect(registerState) {
         when (val state = registerState) {
             is UiState.Success -> {
-                // Registro exitoso: navegar a login o home
                 snackbarHostState.showSnackbar("¡Registro exitoso!")
                 navController.navigate(AppScreens.Login.route) {
-                    // Limpiar el stack para que no vuelva con back
                     popUpTo(AppScreens.Register.route) { inclusive = true }
                 }
             }
             is UiState.Error -> {
-                // Mostrar error en Snackbar
                 snackbarHostState.showSnackbar(state.message)
             }
-            else -> { /* Idle o Loading, no hacer nada aquí */ }
+            else -> {}
         }
     }
 
@@ -71,7 +62,7 @@ fun Register(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()), // ← Scroll para teclado
+                    .verticalScroll(rememberScrollState()),
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.top_image_login),
@@ -105,7 +96,6 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    // ===== Campo Nombre =====
                     Text(
                         text = "Nombre",
                         style = MaterialTheme.typography.bodyLarge,
@@ -114,8 +104,8 @@ fun Register(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
-                        value = nombre, // ← Estado del ViewModel
-                        onValueChange = viewModel::onNombreChange, // ← Actualiza ViewModel
+                        value = nombre,
+                        onValueChange = viewModel::onNombreChange,
                         placeholder = {
                             Text(
                                 "introduce tu nombre aquí",
@@ -133,12 +123,11 @@ fun Register(
                             unfocusedIndicatorColor = Color.Transparent,
                         ),
                         shape = RoundedCornerShape(8.dp),
-                        enabled = registerState !is UiState.Loading // ← Deshabilitar en loading
+                        enabled = registerState !is UiState.Loading
                     )
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    // ===== Campo Apellido =====
                     Text(
                         text = "Apellido",
                         style = MaterialTheme.typography.bodyLarge,
@@ -171,7 +160,6 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    // ===== Campo Correo =====
                     Text(
                         text = "Correo",
                         style = MaterialTheme.typography.bodyLarge,
@@ -204,7 +192,6 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    // ===== Campo Contraseña =====
                     Text(
                         text = "Contraseña",
                         style = MaterialTheme.typography.bodyLarge,
@@ -221,7 +208,7 @@ fun Register(
                                 color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
                             )
                         },
-                        visualTransformation = PasswordVisualTransformation(), // ← Ocultar texto
+                        visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(62.dp),
@@ -238,10 +225,8 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Botón Registrarse =====
-
                     Button(
-                        onClick = { viewModel.registerUser(context) }, // ← Llamar función del ViewModel
+                        onClick = { viewModel.registerUser() },
                         modifier = Modifier
                             .background(
                                 brush = Brush.horizontalGradient(
@@ -260,10 +245,9 @@ fun Register(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent
                         ),
-                        enabled = registerState !is UiState.Loading // ← Deshabilitar en loading
+                        enabled = registerState !is UiState.Loading
                     ) {
                         if (registerState is UiState.Loading) {
-                            // Mostrar ProgressBar cuando está cargando
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
                                 color = MaterialTheme.colorScheme.background
@@ -280,7 +264,6 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Divisor "o" =====
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -304,7 +287,6 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Link a Login =====
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -327,9 +309,8 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Botón Google (deshabilitado por ahora) =====
                     Button(
-                        onClick = { /* TODO: Google Sign-In */ },
+                        onClick = { },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(62.dp),

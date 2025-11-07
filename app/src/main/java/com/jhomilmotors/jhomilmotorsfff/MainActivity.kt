@@ -25,7 +25,11 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.login.Login
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.profile.ProfileScreen
 
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
 
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -28,6 +28,9 @@ interface ApiService {
         @Header("X-Client-Type") clientType: String = "mobile"
     ) : Response<AuthResponse>
 
+    @POST("/api/auth/logout")
+    suspend fun logout(): Response<Unit>
+
     @POST("/api/auth/refresh")
     suspend fun refreshToken(
         @Header("X-Client-Type") clientType: String = "mobile",
@@ -36,10 +39,10 @@ interface ApiService {
 
     //-.####### Perfil de Usuario #######
 
-    @GET("api/users/me")
-    suspend fun getCurrentUserProfile(): CustomerProfile
+    @GET("/api/users/me")
+    suspend fun getCurrentUserProfile(): Response<CustomerProfile>
 
-    @PUT("api/users/me")
-    suspend fun updateUserProfile(@Body profile: CustomerProfile): CustomerProfile
+    @PUT("/api/users/me")
+    suspend fun updateUserProfile(@Body profile: CustomerProfile): Response<CustomerProfile>
 
 }

@@ -1,3 +1,4 @@
+// utils/AuthInterceptor.kt
 package com.jhomilmotors.jhomilmotorsfff.utils
 
 import android.content.Context
@@ -20,17 +21,21 @@ class AuthInterceptor(
     override fun intercept(chain: Interceptor.Chain): Response {
         var request = chain.request()
         val accessToken = TokenManager.getAccessToken(appContext)
-        val isLoginEndpoint = request.url.encodedPath.endsWith("/login")
-        val isRegisterEndpoint = request.url.encodedPath.endsWith("/register")
-        val isRefreshEndpoint = request.url.encodedPath.endsWith("/refresh")
+        val path = request.url.encodedPath
+        val method = request.method
 
-        // Agregar Authorization header si hay token y no es endpoint de auth
-        if (!isLoginEndpoint && !isRegisterEndpoint && !isRefreshEndpoint && !accessToken.isNullOrBlank()) {
+        // Detectar endpoints especiales
+        val isAuthEndpoint = path.contains("/login") ||
+                path.contains("/register") ||
+                path.contains("/refresh")
+
+        // Solo agregar token en endpoints no-auth
+        if (!isAuthEndpoint && !accessToken.isNullOrBlank()) {
             request = request.newBuilder()
                 .addHeader("Authorization", "Bearer $accessToken")
                 .addHeader("X-Client-Type", "mobile")
                 .build()
-        } else if (!isLoginEndpoint && !isRegisterEndpoint && !isRefreshEndpoint) {
+        } else if (!isAuthEndpoint) {
             request = request.newBuilder()
                 .addHeader("X-Client-Type", "mobile")
                 .build()
@@ -38,9 +43,11 @@ class AuthInterceptor(
 
         var response = chain.proceed(request)
 
-        // Si recibimos 401 y no es en endpoints de auth, intentar refrescar token
-        if (response.code == 401 && !isLoginEndpoint && !isRegisterEndpoint && !isRefreshEndpoint) {
+        // IMPORTANTE: Solo hacer refresh en GET, nunca en PUT/POST/DELETE
+        if (response.code == 401 && !isAuthEndpoint && method == "GET") {
+            Log.w("AuthInterceptor", "401 recibido, intentando refresh...")
             response.close()
+
             val refreshed = runBlocking { tryRefreshToken(appContext) }
 
             if (refreshed) {
@@ -59,7 +66,7 @@ class AuthInterceptor(
     private suspend fun tryRefreshToken(context: Context): Boolean {
         val refreshToken = TokenManager.getRefreshToken(context)
         if (refreshToken.isNullOrBlank()) {
-            Log.d("AuthInterceptor", "No refresh token available")
+            TokenManager.clear(context)
             return false
         }
 
@@ -78,7 +85,7 @@ class AuthInterceptor(
             if (response.isSuccessful && response.body() != null) {
                 val newAuth = response.body()!!
                 TokenManager.saveTokens(context, newAuth.accessToken, newAuth.refreshToken)
-                Log.d("AuthInterceptor", "Token refreshed successfully")
+                Log.d("AuthInterceptor", "✅ Token refreshed")
                 true
             } else {
                 Log.e("AuthInterceptor", "Refresh failed: ${response.code()}")
