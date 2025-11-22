@@ -5,13 +5,18 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.CustomerProfile
 import com.jhomilmotors.jhomilmotorsfff.data.model.LoginRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.RefreshRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.RegisterRequest
+import com.jhomilmotors.jhomilmotorsfff.data.model.SpringPage
 import com.jhomilmotors.jhomilmotorsfff.data.model.UserResponse
+import com.jhomilmotors.jhomilmotorsfff.data.model.category.CategoryResponse
+import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductDetailsDto
+import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -45,4 +50,17 @@ interface ApiService {
     @PUT("/api/users/me")
     suspend fun updateUserProfile(@Body profile: CustomerProfile): Response<CustomerProfile>
 
+    //-.####### Home #######
+    @GET("/api/v1/catalog/categories/full")
+    suspend fun getCategories() : Response<List<CategoryResponse>>
+
+    @GET("/api/v1/catalog/category-activo/{categoryId}")
+    suspend fun getProductsByCategory(
+        @Path("categoryId") categoryId: Int
+    ) : Response<SpringPage<ProductResponse>>
+
+    @GET("/api/v1/catalog/product/{id}")
+    suspend fun getProductDetails(
+        @Path("id") productId: Long
+    ) : Response<ProductDetailsDto>
 }

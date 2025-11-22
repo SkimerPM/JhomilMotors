@@ -1,60 +1,36 @@
 package com.jhomilmotors.jhomilmotorsfff.ui.screens.profile
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
+import android.content.Intent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -69,8 +45,10 @@ import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.AuthLogoutViewModel
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.ProfileViewModel
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.SessionViewModel
 
-// --- LÓGICA DE INTENTS IMPLÍCITOS ---
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 
+// ========== FUNCIONES DE INTENTS ==========
 fun callSupport(context: Context, phoneNumber: String) {
     val dialIntent = Intent(Intent.ACTION_DIAL).apply {
         data = Uri.parse("tel:$phoneNumber")
@@ -101,105 +79,246 @@ fun sendEmailToSupport(context: Context, emailAddress: String, subject: String) 
     }
 }
 
-// --- COMPONENTE DE OPCIÓN DE CONTACTO ---
+// ========== COMPONENTES REUTILIZABLES ==========
 
 @Composable
-fun ContactOptionItem(
-    icon: ImageVector,
-    label: String,
-    onClick: () -> Unit
+fun ProfileTopBar(
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 12.dp, horizontal = 24.dp)
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 2.dp
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(Modifier.width(16.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = null,
-            tint = Color.LightGray
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Volver",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Text(
+                text = "Mi Perfil",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f).padding(start = 8.dp)
+            )
+        }
     }
-    Divider(modifier = Modifier.padding(horizontal = 24.dp), color = Color.LightGray)
 }
 
-// --- OTROS COMPONENTES ---
-
 @Composable
-fun GradientButton(
-    text: String,
-    gradient: Brush,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    onClick: () -> Unit = { },
+fun ProfileHeaderCard(
+    name: String,
+    email: String,
+    modifier: Modifier = Modifier
 ) {
-    Box(
+    Card(
         modifier = modifier
-            .alpha(if (enabled) 1f else 0.5f)
-            .background(gradient, shape = MaterialTheme.shapes.medium)
-            .clickable(enabled = enabled) { onClick() },
-        contentAlignment = Alignment.Center,
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            color = Color.White
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(80.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 4.dp
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.profile_avatar),
+                    contentDescription = "Avatar",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                        .clip(CircleShape)
+                )
+            }
+            Spacer(modifier = Modifier.width(20.dp))
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = email,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                )
+            }
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProfileTextField(
+fun ModernTextField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    enabled: Boolean
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    readOnly: Boolean = false
 ) {
-    Column(
-        modifier = Modifier.padding(bottom = 16.dp)
-    ) {
+    Column(modifier = modifier) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = 4.dp)
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
         )
-
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
+            readOnly = readOnly,
             singleLine = true,
             shape = MaterialTheme.shapes.medium,
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
-                disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledIndicatorColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
+                disabledTextColor = MaterialTheme.colorScheme.onSurface
             )
         )
     }
 }
 
-// --- PANTALLA PRINCIPAL CON HILT Y MVVM ---
+@Composable
+fun ActionButton(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    containerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
+    contentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onPrimary
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        enabled = enabled,
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = contentColor
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 4.dp,
+            disabledElevation = 0.dp
+        )
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+fun ContactOptionCard(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SectionTitle(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onBackground,
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+    )
+}
+
+// ========== PANTALLA PRINCIPAL ==========
 
 @Composable
 fun ProfileScreen(
@@ -209,45 +328,31 @@ fun ProfileScreen(
     sessionViewModel: SessionViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-
-    // ===== Estados de logout =====
     val logoutState by logoutViewModel.logoutState.collectAsState()
-
-    // ===== Estados de sesión =====
     val sessionValid by sessionViewModel.sessionValid.collectAsState()
     val isChecking by sessionViewModel.isChecking.collectAsState()
 
-    // ===== Estados de perfil =====
     val name by viewModel.name.collectAsState()
     val lastname by viewModel.lastname.collectAsState()
     val email by viewModel.email.collectAsState()
     val phoneNumber by viewModel.phoneNumber.collectAsState()
     val address by viewModel.address.collectAsState()
-
     val profileState by viewModel.profileState.collectAsState()
     val updateState by viewModel.updateState.collectAsState()
 
+    var isEditMode by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Datos de soporte
     val supportPhone = "51922309105"
     val supportEmail = "fatima.rodriguez@tecsup.edu.pe"
-    val whatsappMessage = "Hola Jhomil Motors, necesito ayuda con mi pedido."
+    val whatsappMessage = "Hola Jhomil Motors, necesito ayuda."
 
-    val primaryGradientBrush = Brush.horizontalGradient(
-        colors = listOf(Color(0xFF20376D), Color(0xFF3E6AD3))
-    )
-    val errorGradientBrush = Brush.horizontalGradient(
-        colors = listOf(Color(0xFF7F1736), Color(0xFFCB1332))
-    )
-
-    // ===== Validar sesión al entrar =====
+    // ===== EFECTOS DE SESIÓN Y ESTADOS =====
     LaunchedEffect(Unit) {
         viewModel.loadProfile()
         sessionViewModel.checkSession()
     }
 
-    // ===== Redirigir a login si sesión no es válida =====
     LaunchedEffect(sessionValid, isChecking) {
         if (!isChecking && !sessionValid) {
             navController.navigate(AppScreens.Login.route) {
@@ -256,11 +361,10 @@ fun ProfileScreen(
         }
     }
 
-    // ===== Manejar logout exitoso =====
     LaunchedEffect(logoutState) {
         when (logoutState) {
             is UiState.Success -> {
-                snackbarHostState.showSnackbar("¡Sesión cerrada!")
+                snackbarHostState.showSnackbar("Sesión cerrada correctamente")
                 navController.navigate(AppScreens.Login.route) {
                     popUpTo(0) { inclusive = true }
                 }
@@ -273,11 +377,11 @@ fun ProfileScreen(
         }
     }
 
-    // ===== Manejar actualización de perfil =====
     LaunchedEffect(updateState) {
         when (val state = updateState) {
             is UiState.Success -> {
-                snackbarHostState.showSnackbar("¡Perfil actualizado!")
+                snackbarHostState.showSnackbar("Perfil actualizado correctamente")
+                isEditMode = false
                 viewModel.resetUpdateState()
             }
             is UiState.Error -> {
@@ -287,190 +391,217 @@ fun ProfileScreen(
         }
     }
 
+    // ===== UI PRINCIPAL =====
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                snackbar = { data ->
+                    Snackbar(
+                        snackbarData = data,
+                        containerColor = MaterialTheme.colorScheme.inverseSurface,
+                        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+                        shape = MaterialTheme.shapes.medium
+                    )
+                }
+            )
+        },
+        topBar = {
+            ProfileTopBar(onBackClick = { navController.popBackStack() })
+        }
     ) { paddingValues ->
-        Surface(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            color = MaterialTheme.colorScheme.background
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             when {
-                isChecking -> {
-                    // Validando sesión
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-                !sessionValid -> {
-                    // Sesión inválida (se redirige automáticamente en LaunchedEffect)
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+                isChecking || !sessionValid -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
                 else -> {
-                    // Sesión válida, mostrar contenido
                     when (val state = profileState) {
                         is UiState.Loading -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                             }
                         }
-
                         is UiState.Success -> {
                             Column(
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .verticalScroll(rememberScrollState())
                             ) {
-                                // --- Barra Superior ---
-                                Row(
+                                // HEADER CON AVATAR Y DATOS PRINCIPALES
+                                ProfileHeaderCard(
+                                    name = "$name $lastname",
+                                    email = email
+                                )
+
+                                // INFORMACIÓN PERSONAL
+                                SectionTitle(text = "Información Personal")
+
+                                Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .padding(horizontal = 16.dp),
+                                    shape = MaterialTheme.shapes.large,
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surface
+                                    ),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                                 ) {
-                                    IconButton(onClick = { navController.popBackStack() }) {
-                                        Icon(
-                                            Icons.AutoMirrored.Filled.ArrowBack,
-                                            contentDescription = "Volver",
-                                            tint = MaterialTheme.colorScheme.onSurface,
-                                            modifier = Modifier.size(44.dp)
+                                    Column(
+                                        modifier = Modifier.padding(20.dp),
+                                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        ModernTextField(
+                                            label = "Nombres",
+                                            value = name,
+                                            onValueChange = viewModel::onNameChange,
+                                            enabled = isEditMode && updateState !is UiState.Loading
+                                        )
+                                        ModernTextField(
+                                            label = "Apellidos",
+                                            value = lastname,
+                                            onValueChange = viewModel::onLastnameChange,
+                                            enabled = isEditMode && updateState !is UiState.Loading
+                                        )
+                                        ModernTextField(
+                                            label = "Correo electrónico",
+                                            value = email,
+                                            onValueChange = {},
+                                            enabled = false,
+                                            readOnly = true
+                                        )
+                                        ModernTextField(
+                                            label = "Teléfono",
+                                            value = phoneNumber,
+                                            onValueChange = viewModel::onPhoneNumberChange,
+                                            enabled = isEditMode && updateState !is UiState.Loading
+                                        )
+                                        ModernTextField(
+                                            label = "Dirección",
+                                            value = address,
+                                            onValueChange = viewModel::onAddressChange,
+                                            enabled = isEditMode && updateState !is UiState.Loading
                                         )
                                     }
-                                    Text(
-                                        text = "Mi Perfil",
-                                        style = MaterialTheme.typography.titleLarge,
-                                        modifier = Modifier.weight(1f),
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Spacer(modifier = Modifier.width(48.dp))
                                 }
 
-                                // --- Contenido Principal Desplazable ---
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .verticalScroll(rememberScrollState())
-                                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // BOTONES DE ACCIÓN
+                                AnimatedVisibility(
+                                    visible = !isEditMode,
+                                    enter = fadeIn(),
+                                    exit = fadeOut()
                                 ) {
-                                    // --- Botón de Editar ---
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.End
+                                    Column(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(12.dp)
                                     ) {
+                                        ActionButton(
+                                            text = "Editar Perfil",
+                                            icon = Icons.Default.Edit,
+                                            onClick = { isEditMode = true },
+                                            containerColor = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+
+                                AnimatedVisibility(
+                                    visible = isEditMode,
+                                    enter = fadeIn(),
+                                    exit = fadeOut()
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        ActionButton(
+                                            text = if (updateState is UiState.Loading) "Guardando..." else "Guardar Cambios",
+                                            Icons.Default.Check,
+                                            onClick = { viewModel.saveProfile() },
+                                            enabled = updateState !is UiState.Loading,
+                                            containerColor = MaterialTheme.colorScheme.primary
+                                        )
                                         OutlinedButton(
-                                            onClick = { /* Toggle edit mode */ },
-                                            enabled = updateState !is UiState.Loading
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_edit),
-                                                contentDescription = "Editar",
-                                                modifier = Modifier.size(18.dp)
+                                            onClick = {
+                                                isEditMode = false
+                                                viewModel.loadProfile()
+                                            },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(56.dp),
+                                            shape = MaterialTheme.shapes.medium,
+                                            colors = ButtonDefaults.outlinedButtonColors(
+                                                contentColor = MaterialTheme.colorScheme.onSurface
                                             )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(text = "Editar")
+                                        ) {
+                                            Text(
+                                                text = "Cancelar",
+                                                style = MaterialTheme.typography.labelLarge
+                                            )
                                         }
                                     }
-                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
 
-                                    // --- Campos del Formulario ---
-                                    ProfileTextField(
-                                        label = "Nombres",
-                                        value = name,
-                                        onValueChange = viewModel::onNameChange,
-                                        enabled = updateState !is UiState.Loading
-                                    )
-                                    ProfileTextField(
-                                        label = "Apellidos",
-                                        value = lastname,
-                                        onValueChange = viewModel::onLastnameChange,
-                                        enabled = updateState !is UiState.Loading
-                                    )
-                                    ProfileTextField(
-                                        label = "Correo electrónico",
-                                        value = email,
-                                        onValueChange = {},
-                                        enabled = false
-                                    )
-                                    ProfileTextField(
-                                        label = "Teléfono",
-                                        value = phoneNumber,
-                                        onValueChange = viewModel::onPhoneNumberChange,
-                                        enabled = updateState !is UiState.Loading
-                                    )
-                                    ProfileTextField(
-                                        label = "Dirección",
-                                        value = address,
-                                        onValueChange = viewModel::onAddressChange,
-                                        enabled = updateState !is UiState.Loading
-                                    )
-                                    Spacer(modifier = Modifier.height(24.dp))
+                                Spacer(modifier = Modifier.height(24.dp))
 
-                                    // --- Botones de Acción ---
-                                    GradientButton(
-                                        text = if (updateState is UiState.Loading) "Guardando..." else "Guardar Cambios",
-                                        gradient = primaryGradientBrush,
-                                        enabled = updateState !is UiState.Loading,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(62.dp),
-                                        onClick = { viewModel.saveProfile() }
-                                    )
+                                // SOPORTE Y CONTACTO
+                                SectionTitle(text = "Soporte y Contacto")
 
-                                    Spacer(modifier = Modifier.height(12.dp))
-
-                                    GradientButton(
-                                        text = if (logoutState is UiState.Loading) "Cerrando..." else "Cerrar Sesión",
-                                        gradient = errorGradientBrush,
-                                        enabled = logoutState !is UiState.Loading,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(62.dp),
-                                        onClick = { logoutViewModel.logout() }
-                                    )
-
-                                    // --- SECCIÓN SOPORTE Y CONTACTO ---
-                                    Spacer(modifier = Modifier.height(32.dp))
-                                    Text(
-                                        text = "Soporte y Contacto",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.padding(bottom = 8.dp),
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-
-                                    ContactOptionItem(
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    ContactOptionCard(
                                         icon = Icons.Default.Phone,
-                                        label = "Llamar a Soporte (Línea Fija)",
+                                        title = "Llamar a Soporte",
+                                        subtitle = "Línea de atención al cliente",
                                         onClick = { callSupport(context, supportPhone) }
                                     )
-
-                                    ContactOptionItem(
+                                    ContactOptionCard(
                                         icon = Icons.Default.Send,
-                                        label = "Contactar por WhatsApp",
+                                        title = "WhatsApp",
+                                        subtitle = "Chatea con nosotros",
                                         onClick = { contactViaWhatsapp(context, supportPhone, whatsappMessage) }
                                     )
-
-                                    ContactOptionItem(
+                                    ContactOptionCard(
                                         icon = Icons.Default.Email,
-                                        label = "Enviar Correo Electrónico",
-                                        onClick = { sendEmailToSupport(context, supportEmail, "Consulta desde la App Móvil") }
+                                        title = "Correo Electrónico",
+                                        subtitle = "Envíanos un mensaje",
+                                        onClick = { sendEmailToSupport(context, supportEmail, "Consulta desde la App") }
                                     )
-
-                                    Spacer(modifier = Modifier.height(32.dp))
                                 }
+
+                                Spacer(modifier = Modifier.height(24.dp))
+
+                                // CERRAR SESIÓN
+                                Divider(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    color = MaterialTheme.colorScheme.outlineVariant
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                ActionButton(
+                                    text = if (logoutState is UiState.Loading) "Cerrando sesión..." else "Cerrar Sesión",
+                                    icon = Icons.AutoMirrored.Filled.ExitToApp,
+                                    onClick = { logoutViewModel.logout() },
+                                    enabled = logoutState !is UiState.Loading && !isEditMode,
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+
+                                Spacer(modifier = Modifier.height(32.dp))
                             }
                         }
-
                         is UiState.Error -> {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
@@ -478,21 +609,30 @@ fun ProfileScreen(
                             ) {
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    modifier = Modifier.padding(16.dp)
+                                    modifier = Modifier.padding(24.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
                                     Text(
-                                        text = "Error: ${state.message}",
-                                        color = MaterialTheme.colorScheme.error,
-                                        style = MaterialTheme.typography.bodyLarge
+                                        text = "Error al cargar el perfil",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.error
                                     )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Button(onClick = { viewModel.loadProfile() }) {
+                                    Text(
+                                        text = state.message,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Button(
+                                        onClick = { viewModel.loadProfile() },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary
+                                        )
+                                    ) {
                                         Text("Reintentar")
                                     }
                                 }
                             }
                         }
-
                         else -> {}
                     }
                 }
@@ -500,8 +640,6 @@ fun ProfileScreen(
         }
     }
 }
-
-// --- PREVIEWS ---
 
 @Preview(showBackground = true)
 @Composable

@@ -17,4 +17,12 @@ sealed class AppScreens(val route: String) {
     object Login : AppScreens("login")
 
     object Register : AppScreens("register")
+
+    object ProductList : AppScreens("product_list/{categoryId}") {
+        // Esta función auxiliar nos ayuda a crear la ruta fácilmente luego
+        fun createRoute(id: Int) = "product_list/$id"
+    }
+    object ProductDetail : AppScreens("product_detail/{productId}") {
+        fun createRoute(id: Long) = "product_detail/$id"
+    }
 }

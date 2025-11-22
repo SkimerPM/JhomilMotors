@@ -75,10 +75,12 @@ dependencies {
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.52")
+    implementation(libs.androidx.compose.ui.ui)
     kapt("com.google.dagger:hilt-android-compiler:2.52")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-
+    //para las imagenes:
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

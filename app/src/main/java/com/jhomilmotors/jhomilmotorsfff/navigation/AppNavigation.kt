@@ -4,14 +4,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.jhomilmotors.jhomilmotorsfff.ui.components.BottomNavigationBar
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.cart.CartScreen
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.confirmacion.ConfirmationScreen
@@ -21,10 +20,9 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.profile.ProfileScreen
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.login.Login
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.register.Register
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
-import com.jhomilmotors.jhomilmotorsfff.utils.TokenManager
-import com.jhomilmotors.jhomilmotorsfff.data.model.RefreshRequest
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.DetailsProduct.DetailsProductoScreen
+
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.home.ProductListScreen
 
 @Composable
 fun AppNavigation() {
@@ -75,6 +73,38 @@ fun AppNavigation() {
             }
             composable(route = AppScreens.Register.route) {
                 Register(navController)
+            }
+            composable(
+                route = AppScreens.ProductList.route, // "product_list/{categoryId}"
+                arguments = listOf(
+                    navArgument("categoryId") { type = NavType.IntType } // Decimos que es un Número
+                )
+            ) { backStackEntry ->
+                // 1. Recuperamos el ID de la "mochila" (argumentos)
+                val categoryId = backStackEntry.arguments?.getInt("categoryId") ?: 0
+                // 2. Llamamos a la pantalla nueva pasándole el ID
+                ProductListScreen(
+                    categoryId = categoryId,
+                    onBack = { navController.popBackStack() },
+                    onNavigateToDetail = { productId ->
+
+                        navController.navigate(AppScreens.ProductDetail.createRoute(productId.toInt().toLong()))
+                    }
+                )
+            }
+            composable(
+                route = AppScreens.ProductDetail.route, // "product_detail/{productId}"
+                arguments = listOf(
+                    navArgument("productId") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                // Capturamos el ID de la URL
+                val productId = backStackEntry.arguments?.getInt("productId") ?: 0
+                // El ViewModel se encargará de recibir el 'productId' (0) vía SavedStateHandle.
+                DetailsProductoScreen(
+                    productId = productId, // Pasamos el ID para el SavedStateHandle
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }

@@ -1,7 +1,9 @@
 package com.jhomilmotors.jhomilmotorsfff.ui.screens.home
 
+import android.R.attr.contentDescription
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,10 +57,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.jhomilmotors.jhomilmotorsfff.R
+import com.jhomilmotors.jhomilmotorsfff.data.model.UiState
 import com.jhomilmotors.jhomilmotorsfff.navigation.AppScreens
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.SessionViewModel
+import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.home.CategoryViewModel
 
 data class contentHeaderCarrusel(
     val id: Int,
@@ -306,7 +311,32 @@ fun ProductItem(product: Product) {
         }
     }
 }
+@Composable
+fun CategoryItemView(
+    item: CategoryItem
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(74.dp)
+                .background(MaterialTheme.colorScheme.tertiary.copy(0.12f), CircleShape).clickable { item.onClick() },
+            contentAlignment = Alignment.Center
 
+        ) {
+            AsyncImage(
+                model = item.iconUri,
+                contentDescription = "Icono de ${item.nombre}",
+                modifier = Modifier.size(34.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = item.nombre,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
 @Composable
 fun ProductsCarousel(products: List<Product>) {
     Column(
@@ -323,16 +353,26 @@ fun ProductsCarousel(products: List<Product>) {
         }
     }
 }
+data class CategoryItem (
+    val id: Int,
+    val nombre : String,
+    val iconUri : String?,
+    val onClick : () -> Unit,
+)
 
 @Composable
 fun Principal(
     navController: NavController,
-    sessionViewModel: SessionViewModel = hiltViewModel()
+    sessionViewModel: SessionViewModel = hiltViewModel(),
+    categoryViewModel: CategoryViewModel  = hiltViewModel()
 ){
 
     // ===== Estados de sesión =====
     val sessionValid by sessionViewModel.sessionValid.collectAsState()
     val isChecking by sessionViewModel.isChecking.collectAsState()
+
+    // ===== Estados de Category =====
+    val category by categoryViewModel.categories.collectAsState()
 
     // ===== Validar sesión al entrar =====
     LaunchedEffect(Unit) {
@@ -345,6 +385,11 @@ fun Principal(
                 popUpTo(0) { inclusive = true }
             }
         }
+    }
+
+    // ===== Cargar Categories =====
+    LaunchedEffect(Unit ) {
+        categoryViewModel.loadCategories()
     }
 
     val scrollState = rememberScrollState()
@@ -470,117 +515,47 @@ fun Principal(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-                Row (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 19.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    Column () {
-                        IconButton(
-                            onClick = { /* Acción al hacer clic */ },
-                            modifier = Modifier
-                                .size(74.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.tertiary.copy(0.12f),
-                                    shape = CircleShape
-                                ),
-                            colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = MaterialTheme.colorScheme.secondary
-                            )
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.accesorios),
-                                contentDescription = "Icono de accesorios",
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Accesorios",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Column (
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        IconButton(
-                            onClick = { /* Acción al hacer clic */ },
-                            modifier = Modifier
-                                .size(74.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.tertiary.copy(0.12f),
-                                    shape = CircleShape
-                                ),
-                            colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = MaterialTheme.colorScheme.secondary
-                            )
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.filtros),
-                                contentDescription = "Icono de accesorios",
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Filtros",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Column (horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(
-                            onClick = { /* Acción al hacer clic */ },
-                            modifier = Modifier
-                                .size(74.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.tertiary.copy(0.12f),
-                                    shape = CircleShape
-                                ),
-                            colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = MaterialTheme.colorScheme.secondary
-                            )
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.aceites),
-                                contentDescription = "Icono de accesorios",
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Accesorios",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Column (horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(
-                            onClick = { /* Acción al hacer clic */ },
-                            modifier = Modifier
-                                .size(74.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.tertiary.copy(0.12f),
-                                    shape = CircleShape
-                                ),
-                            colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = MaterialTheme.colorScheme.secondary
-                            )
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.frenos),
-                                contentDescription = "Icono de accesorios",
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Frenos",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
 
 
+                when (val state = category){
+                    is UiState.Loading -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            repeat(4) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(74.dp)
+                                        .background(MaterialTheme.colorScheme.tertiary.copy(0.12f), CircleShape)
+                                )
+                            }
+                        }
+                    }
+                    is UiState.Error -> {
+                        Text("Error al cargar categorías, revisa tu conexión a internet.", color = Color.Red)
+                    }
+                    is UiState.Success -> {
+                        LazyRow (
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(19.dp)
+                        ){
+                            items(state.data) {categoriaApi ->
+                                CategoryItemView(
+                                    item = CategoryItem(
+                                        id = categoriaApi.id.toInt(),
+                                        nombre = categoriaApi.nombre,
+                                        iconUri = categoriaApi.urlImagenCompleta,
+                                        onClick = {navController.navigate(AppScreens.ProductList.createRoute(categoriaApi.id.toInt()))}
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    else -> {}
                 }
+
+
                 Spacer(modifier = Modifier.height(25.dp))
                 Spacer(modifier = Modifier
                     .fillMaxWidth()

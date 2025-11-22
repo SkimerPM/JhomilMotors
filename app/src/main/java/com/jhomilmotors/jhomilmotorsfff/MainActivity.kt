@@ -18,15 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.jhomilmotors.jhomilmotorsfff.navigation.AppNavigation
-import com.jhomilmotors.jhomilmotorsfff.ui.components.BottomNavigationBar
-import com.jhomilmotors.jhomilmotorsfff.ui.screens.DetailsProduct.DetailsProductoScreen
-import com.jhomilmotors.jhomilmotorsfff.ui.screens.cart.CartScreen
-import com.jhomilmotors.jhomilmotorsfff.ui.screens.login.Login
-import com.jhomilmotors.jhomilmotorsfff.ui.screens.profile.ProfileScreen
 
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.HiltAndroidApp
 
 
 @AndroidEntryPoint
