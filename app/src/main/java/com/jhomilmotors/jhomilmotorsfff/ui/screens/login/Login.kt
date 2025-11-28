@@ -255,13 +255,14 @@ fun Login(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        onClick = { },
+                        onClick = { viewModel.onGoogleLoginClick() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(62.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.outlineVariant
-                        )
+                        ),
+                        enabled = loginState !is UiState.Loading
                     ) {
                         Image(
                             painter = painterResource(R.drawable.googl_logo),

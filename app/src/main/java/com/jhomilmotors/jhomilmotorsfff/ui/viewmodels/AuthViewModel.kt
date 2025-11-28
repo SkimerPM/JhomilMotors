@@ -9,6 +9,7 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.UiState
 import com.jhomilmotors.jhomilmotorsfff.data.model.UserResponse
 import com.jhomilmotors.jhomilmotorsfff.data.repository.AuthRepository
 import com.jhomilmotors.jhomilmotorsfff.utils.TokenManager
+import com.jhomilmotors.jhomilmotorsfff.data.auth.GoogleAuthClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val repository: AuthRepository,
+    private val googleAuthClient: GoogleAuthClient,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -46,6 +48,53 @@ class AuthViewModel @Inject constructor(
     fun onApellidoChange(newValue: String) { _apellido.value = newValue }
     fun onEmailChange(newValue: String) { _email.value = newValue }
     fun onPasswordChange(newValue: String) { _password.value = newValue }
+
+    // ✅ FUNCIÓN LOGIN GOOGLE
+    fun onGoogleLoginClick() {
+        viewModelScope.launch {
+            _loginState.value = UiState.Loading
+            try {
+                // 1. Abrir el diálogo de Google
+                val idToken = googleAuthClient.signIn()
+
+                if (idToken != null) {
+                    // 2. Enviar Token al Backend
+                    val response = repository.loginWithGoogle(idToken)
+                    handleAuthResponse(response)
+                } else {
+                    _loginState.value = UiState.Error("Inicio de sesión con Google cancelado")
+                }
+            } catch (e: Exception) {
+                _loginState.value = UiState.Error("Error: ${e.message}")
+            }
+        }
+    }
+
+    // ✅ REFACTORIZACIÓN: Lógica común de respuesta (usada en Login normal y Google)
+    private fun handleAuthResponse(response: retrofit2.Response<AuthResponse>) {
+        if (response.isSuccessful && response.body() != null) {
+            val auth = response.body()!!
+            TokenManager.saveTokens(context, auth.accessToken, auth.refreshToken)
+            _loginState.value = UiState.Success(auth)
+        } else {
+            val errorBody = response.errorBody()?.string()
+
+            // --- MANEJO DE EMAIL NO VERIFICADO ---
+            // Asumiendo que tu backend devuelve 403 o 400 con un mensaje específico
+            if (response.code() == 403 || (errorBody?.contains("verificado") == true)) {
+                _loginState.value = UiState.Error("Tu cuenta no está verificada. Por favor revisa tu correo.")
+            } else {
+                // Tu lógica existente de parseo de error JSON
+                val errorMessage = try {
+                    val json = JSONObject(errorBody ?: "{}")
+                    json.optString("message", "Credenciales inválidas")
+                } catch (e: Exception) {
+                    "Error de autenticación"
+                }
+                _loginState.value = UiState.Error(errorMessage)
+            }
+        }
+    }
 
     fun registerUser() {
         if (_nombre.value.isBlank() || _apellido.value.isBlank() ||
@@ -90,28 +139,14 @@ class AuthViewModel @Inject constructor(
 
     fun loginUser() {
         if (_email.value.isBlank() || _password.value.isBlank()) {
-            _loginState.value = UiState.Error("Todos los campos son obligatorios")
+            _loginState.value = UiState.Error("Campos obligatorios")
             return
         }
-
         viewModelScope.launch {
             _loginState.value = UiState.Loading
             try {
                 val response = repository.loginUser(_email.value, _password.value)
-                if (response.isSuccessful && response.body() != null) {
-                    val auth = response.body()!!
-                    TokenManager.saveTokens(context, auth.accessToken, auth.refreshToken)
-                    _loginState.value = UiState.Success(auth)
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    val errorMessage = try {
-                        val json = JSONObject(errorBody ?: "{}")
-                        json.optString("message", json.optString("email", "Credenciales inválidas"))
-                    } catch (e: Exception) {
-                        errorBody ?: "Credenciales inválidas"
-                    }
-                    _loginState.value = UiState.Error(errorMessage)
-                }
+                handleAuthResponse(response) // Reutilizamos la lógica
             } catch (e: Exception) {
                 _loginState.value = UiState.Error(e.message ?: "Error de conexión")
             }
