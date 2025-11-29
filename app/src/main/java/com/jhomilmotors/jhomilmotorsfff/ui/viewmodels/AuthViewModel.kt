@@ -49,20 +49,19 @@ class AuthViewModel @Inject constructor(
     fun onEmailChange(newValue: String) { _email.value = newValue }
     fun onPasswordChange(newValue: String) { _password.value = newValue }
 
-    // ✅ FUNCIÓN LOGIN GOOGLE
-    fun onGoogleLoginClick() {
+    // FUNCIÓN LOGIN GOOGLE
+    fun onGoogleLoginClick(activityContext: Context) {
         viewModelScope.launch {
             _loginState.value = UiState.Loading
             try {
-                // 1. Abrir el diálogo de Google
-                val idToken = googleAuthClient.signIn()
+                // 🟢 CAMBIO 4: Pasamos ese contexto al cliente
+                val idToken = googleAuthClient.signIn(activityContext)
 
                 if (idToken != null) {
-                    // 2. Enviar Token al Backend
                     val response = repository.loginWithGoogle(idToken)
                     handleAuthResponse(response)
                 } else {
-                    _loginState.value = UiState.Error("Inicio de sesión con Google cancelado")
+                    _loginState.value = UiState.Error("Inicio de sesión cancelado")
                 }
             } catch (e: Exception) {
                 _loginState.value = UiState.Error("Error: ${e.message}")

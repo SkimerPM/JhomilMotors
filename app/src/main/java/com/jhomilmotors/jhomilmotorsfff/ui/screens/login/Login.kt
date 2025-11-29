@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -254,8 +255,12 @@ fun Login(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    val context = LocalContext.current
                     Button(
-                        onClick = { viewModel.onGoogleLoginClick() },
+//                        onClick = { viewModel.onGoogleLoginClick() },
+                        onClick = {
+                            viewModel.onGoogleLoginClick(context)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(62.dp),
