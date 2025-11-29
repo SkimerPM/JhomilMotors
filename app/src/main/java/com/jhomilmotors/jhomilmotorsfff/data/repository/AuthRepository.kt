@@ -35,4 +35,11 @@ class AuthRepository @Inject constructor(
         val request = LoginRequest(email = email, password = password)
         return api.login(request)
     }
+
+    // ✅ NUEVO
+    suspend fun loginWithGoogle(idToken: String): Response<AuthResponse> {
+        // Asumiendo que creaste GoogleLoginRequest en ApiService o models
+        // Si no, crea el data class: data class GoogleLoginRequest(val idToken: String)
+        return api.googleLogin(com.jhomilmotors.jhomilmotorsfff.data.model.GoogleLoginRequest(idToken))
+    }
 }

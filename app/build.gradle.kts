@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -31,11 +32,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -81,6 +82,16 @@ dependencies {
 
     //para las imagenes:
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Credential Manager (La forma moderna de Google Sign-In)
+    implementation("androidx.credentials:credentials:1.2.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.2.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
+
+    //Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

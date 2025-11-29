@@ -1,5 +1,6 @@
 package com.jhomilmotors.jhomilmotorsfff.di
 import android.content.Context
+import com.jhomilmotors.jhomilmotorsfff.data.auth.GoogleAuthClient
 import com.jhomilmotors.jhomilmotorsfff.data.remote.ApiService
 import com.jhomilmotors.jhomilmotorsfff.data.repository.AuthRepository
 import com.jhomilmotors.jhomilmotorsfff.utils.AuthInterceptor
@@ -71,4 +72,11 @@ object AppModule {
     @Provides
     fun provideAuthRepository(api: ApiService): AuthRepository =
         AuthRepository(api)
+
+    // ✅ NUEVO: Proveedor de GoogleAuthClient
+    @Singleton
+    @Provides
+    fun provideGoogleAuthClient(@ApplicationContext context: Context): GoogleAuthClient {
+        return GoogleAuthClient(context)
+    }
 }

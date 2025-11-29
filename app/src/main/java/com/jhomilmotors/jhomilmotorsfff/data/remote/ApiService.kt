@@ -2,6 +2,7 @@ package com.jhomilmotors.jhomilmotorsfff.data.remote
 
 import com.jhomilmotors.jhomilmotorsfff.data.model.AuthResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.CustomerProfile
+import com.jhomilmotors.jhomilmotorsfff.data.model.GoogleLoginRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.LoginRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.RefreshRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.RegisterRequest
@@ -63,4 +64,10 @@ interface ApiService {
     suspend fun getProductDetails(
         @Path("id") productId: Long
     ) : Response<ProductDetailsDto>
+
+    // ✅ NUEVO: Endpoint para login con Google
+    @POST("/api/auth/google")
+    suspend fun googleLogin(
+        @Body request: GoogleLoginRequest
+    ): Response<AuthResponse>
 }

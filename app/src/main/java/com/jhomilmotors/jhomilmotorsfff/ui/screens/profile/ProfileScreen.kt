@@ -175,7 +175,7 @@ fun ProfileHeaderCard(
 @Composable
 fun ModernTextField(
     label: String,
-    value: String,
+    value: String?,
     onValueChange: (String) -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier,
@@ -189,7 +189,7 @@ fun ModernTextField(
             modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
         )
         OutlinedTextField(
-            value = value,
+            value = value ?: "",
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
