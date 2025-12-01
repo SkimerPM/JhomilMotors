@@ -2,28 +2,23 @@ package com.jhomilmotors.jhomilmotorsfff
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build // <--- IMPORTANTE
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.jhomilmotors.jhomilmotorsfff.navigation.AppNavigation
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 import dagger.hilt.android.AndroidEntryPoint
 import java.security.MessageDigest
 
-// --- PEGA AQUÍ LA FUNCIÓN CORREGIDA QUE TE DI ARRIBA ---
+// Función de utilidad para logs (se mantiene igual)
 fun logAppSignature(context: Context) {
     try {
         val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -58,21 +53,17 @@ fun logAppSignature(context: Context) {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Habilita el diseño de borde a borde (detrás de la barra de estado)
         enableEdgeToEdge()
 
-        // Diagnóstico: Imprimir SHA-1
         logAppSignature(this)
 
         setContent {
             JhomilMotorsShopTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column(modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                    ) {
-                        AppEntry()
-                    }
-                }
+                // CORRECCIÓN: Eliminamos el Scaffold y Column globales.
+                // AppEntry ocupa toda la pantalla y las pantallas hijas (como Home)
+                // gestionarán su propio Scaffold.
+                AppEntry()
             }
         }
     }
@@ -80,25 +71,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppEntry() {
-    JhomilMotorsShopTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            AppNavigation()
-        }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(text = "Poppins $name!", modifier = modifier)
-}
-
-@Composable
-@Preview()
-fun prev(){
-    JhomilMotorsShopTheme{
-        Greeting("Grupo JhomilMotors")
+    // Surface provee el color de fondo base correcto según el tema (Blanco/Negro)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        AppNavigation()
     }
 }

@@ -74,6 +74,7 @@ dependencies {
 
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
+    implementation("com.airbnb.android:lottie-compose:6.4.0")
     // Hilt
     implementation("com.google.dagger:hilt-android:2.52")
     implementation(libs.androidx.compose.ui.ui)

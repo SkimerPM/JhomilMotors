@@ -10,6 +10,7 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.SpringPage
 import com.jhomilmotors.jhomilmotorsfff.data.model.UserResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.category.CategoryResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductDetailsDto
+import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductOnSaleDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -18,6 +19,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -65,7 +67,14 @@ interface ApiService {
         @Path("id") productId: Long
     ) : Response<ProductDetailsDto>
 
+    @GET("/api/promotion-products/on-sale")
+    suspend fun getProductOffer(
+        @Query("page") page: Int,
+        @Query("size") size: Int = 10
+    ) : Response<SpringPage<ProductOnSaleDTO>>
+
     // Endpoint para login con Google
+
     @POST("/api/auth/google")
     suspend fun googleLogin(
         @Body request: GoogleLoginRequest
