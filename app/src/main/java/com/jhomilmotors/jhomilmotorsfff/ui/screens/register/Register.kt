@@ -225,6 +225,18 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    Text(
+                        text = "Ver Términos y Condiciones",
+                        modifier = Modifier.clickable {
+                            // Esto navegará, pedirá el código "TYC", el backend lo enviará en Base64,
+                            // el móvil lo decodificará y lo mostrará en WebView.
+                            navController.navigate(AppScreens.WebViewContent.createRoute("TYC"))
+                        },
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Button(
                         onClick = { viewModel.registerUser() },
                         modifier = Modifier

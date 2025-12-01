@@ -22,6 +22,7 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.register.Register
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.DetailsProduct.DetailsProductoScreen
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.auth.VerificationPendingScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.common.WebViewScreen
 
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.home.ProductListScreen
 
@@ -91,6 +92,16 @@ fun AppNavigation() {
                             popUpTo(AppScreens.VerificationPending.route) { inclusive = true }
                         }
                     }
+                )
+            }
+            composable(
+                route = AppScreens.WebViewContent.route,
+                arguments = listOf(navArgument("codigo") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val codigo = backStackEntry.arguments?.getString("codigo") ?: ""
+                WebViewScreen(
+                    codigo = codigo,
+                    onBack = { navController.popBackStack() }
                 )
             }
             composable(
