@@ -76,7 +76,15 @@ fun Login(
                 }
             }
             is UiState.Error -> {
-                snackbarHostState.showSnackbar(state.message)
+                if (state.message.startsWith("UNVERIFIED:")) {
+                    // El usuario existe pero no verificó. Lo mandamos a la pantalla de espera.
+                    // Pasamos el email como argumento (encodeado o simple si es seguro)
+                    val emailParam = viewModel.email.value
+                    navController.navigate("verification_pending/$emailParam")
+                } else {
+                    // Error normal (credenciales mal, etc), mostrar Snackbar o Toast
+                    snackbarHostState.showSnackbar(state.message)
+                }
             }
             else -> {}
         }

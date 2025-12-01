@@ -6,6 +6,7 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.RegisterRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.UserResponse
 import retrofit2.Response
 import android.content.Context
+import com.jhomilmotors.jhomilmotorsfff.data.model.GoogleLoginRequest
 import com.jhomilmotors.jhomilmotorsfff.data.remote.ApiService
 import javax.inject.Inject
 
@@ -36,10 +37,16 @@ class AuthRepository @Inject constructor(
         return api.login(request)
     }
 
-    // ✅ NUEVO
+    // ✅ CORREGIDO: Login con Google usando el modelo importado
     suspend fun loginWithGoogle(idToken: String): Response<AuthResponse> {
-        // Asumiendo que creaste GoogleLoginRequest en ApiService o models
-        // Si no, crea el data class: data class GoogleLoginRequest(val idToken: String)
-        return api.googleLogin(com.jhomilmotors.jhomilmotorsfff.data.model.GoogleLoginRequest(idToken))
+        val request = GoogleLoginRequest(idToken = idToken)
+        return api.googleLogin(request)
+    }
+
+    // ✅ NUEVO: Reenviar Verificación (Conecta con AuthController)
+    suspend fun resendVerificationEmail(email: String): Response<Map<String, String>> {
+        // El backend espera un JSON { "email": "..." }
+        val body = mapOf("email" to email)
+        return api.resendVerification(body)
     }
 }

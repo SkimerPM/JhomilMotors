@@ -78,15 +78,18 @@ class AuthViewModel @Inject constructor(
         } else {
             val errorBody = response.errorBody()?.string()
 
-            // --- MANEJO DE EMAIL NO VERIFICADO ---
-            // Asumiendo que tu backend devuelve 403 o 400 con un mensaje específico
-            if (response.code() == 403 || (errorBody?.contains("verificado") == true)) {
-                _loginState.value = UiState.Error("Tu cuenta no está verificada. Por favor revisa tu correo.")
+            // Detectamos si el error es por falta de verificación (Status 403 o texto específico)
+            val isUnverified = response.code() == 403 ||
+                    (errorBody?.contains("verifi", ignoreCase = true) == true)
+
+            if (isUnverified) {
+                // Ponemos un prefijo "UNVERIFIED:"
+                // Así en LoginScreen sabremos que debemos navegar a la otra pantalla
+                _loginState.value = UiState.Error("UNVERIFIED: Tu cuenta no está verificada.")
             } else {
-                // Tu lógica existente de parseo de error JSON
                 val errorMessage = try {
                     val json = JSONObject(errorBody ?: "{}")
-                    json.optString("message", "Credenciales inválidas")
+                    json.optString("message", json.optString("error", "Credenciales inválidas"))
                 } catch (e: Exception) {
                     "Error de autenticación"
                 }
@@ -148,6 +151,28 @@ class AuthViewModel @Inject constructor(
                 handleAuthResponse(response) // Reutilizamos la lógica
             } catch (e: Exception) {
                 _loginState.value = UiState.Error(e.message ?: "Error de conexión")
+            }
+        }
+    }
+
+    fun resendVerificationEmail(emailToResend: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                // Llama a la función que agregaste en AuthRepository
+                val response = repository.resendVerificationEmail(emailToResend)
+
+                if (response.isSuccessful) {
+                    val msg = response.body()?.get("message") ?: "Correo reenviado."
+                    onResult(true, msg)
+                } else {
+                    val errorMsg = try {
+                        val json = JSONObject(response.errorBody()?.string() ?: "")
+                        json.optString("message", "Error al reenviar")
+                    } catch (e: Exception) { "Error al reenviar" }
+                    onResult(false, errorMsg)
+                }
+            } catch (e: Exception) {
+                onResult(false, "Error de conexión: ${e.message}")
             }
         }
     }

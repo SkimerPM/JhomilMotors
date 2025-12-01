@@ -73,9 +73,14 @@ interface ApiService {
         @Query("size") size: Int = 10
     ) : Response<SpringPage<ProductOnSaleDTO>>
 
-    // ✅ NUEVO: Endpoint para login con Google
+    // Endpoint para login con Google
+
     @POST("/api/auth/google")
     suspend fun googleLogin(
         @Body request: GoogleLoginRequest
     ): Response<AuthResponse>
+
+    // Dentro de tu interface AuthService
+    @POST("api/auth/resend-verification")
+    suspend fun resendVerification(@Body body: Map<String, String>): Response<Map<String, String>>
 }

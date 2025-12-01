@@ -18,6 +18,10 @@ sealed class AppScreens(val route: String) {
 
     object Register : AppScreens("register")
 
+    object VerificationPending : AppScreens("verification_pending/{email}") {
+        fun createRoute(email: String) = "verification_pending/$email"
+    }
+
     object ProductList : AppScreens("product_list/{categoryId}") {
         // Esta función auxiliar nos ayuda a crear la ruta fácilmente luego
         fun createRoute(id: Int) = "product_list/$id"
