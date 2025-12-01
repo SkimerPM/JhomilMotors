@@ -21,6 +21,7 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.login.Login
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.register.Register
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.DetailsProduct.DetailsProductoScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.auth.VerificationPendingScreen
 
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.home.ProductListScreen
 
@@ -73,6 +74,24 @@ fun AppNavigation() {
             }
             composable(route = AppScreens.Register.route) {
                 Register(navController)
+            }
+            composable(
+                route = AppScreens.VerificationPending.route,
+                arguments = listOf(
+                    navArgument("email") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val email = backStackEntry.arguments?.getString("email") ?: ""
+
+                VerificationPendingScreen(
+                    email = email,
+                    onBackToLogin = {
+                        // Al volver al login, limpiamos la pila para que no puedan volver atrás
+                        navController.navigate(AppScreens.Login.route) {
+                            popUpTo(AppScreens.VerificationPending.route) { inclusive = true }
+                        }
+                    }
+                )
             }
             composable(
                 route = AppScreens.ProductList.route, // "product_list/{categoryId}"
