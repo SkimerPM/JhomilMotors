@@ -100,6 +100,7 @@ fun AppNavigation() {
             ) { backStackEntry ->
                 val codigo = backStackEntry.arguments?.getString("codigo") ?: ""
                 WebViewScreen(
+                    navController = navController,
                     codigo = codigo,
                     onBack = { navController.popBackStack() }
                 )

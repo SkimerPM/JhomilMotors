@@ -17,10 +17,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.compose.runtime.collectAsState
 import com.jhomilmotors.jhomilmotorsfff.R
 import com.jhomilmotors.jhomilmotorsfff.data.model.UiState
 import com.jhomilmotors.jhomilmotorsfff.navigation.AppScreens
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.AuthViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun Register(
@@ -34,12 +36,29 @@ fun Register(
     val registerState by viewModel.registerState.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var isChecked by remember { mutableStateOf(false) }
+    var hasReadTyC by remember { mutableStateOf(false) }
+    val navBackStackEntry = navController.currentBackStackEntry
+    val acceptedTerms by navBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow("tyc_accepted", false)
+        ?.collectAsState() ?: remember { mutableStateOf(false) }
+
+    LaunchedEffect(acceptedTerms) {
+        if (acceptedTerms) {
+            isChecked = true
+            hasReadTyC = true
+            // Limpiamos el valor para que no se quede pegado
+            navBackStackEntry?.savedStateHandle?.remove<Boolean>("tyc_accepted")
+        }
+    }
 
     LaunchedEffect(registerState) {
         when (val state = registerState) {
             is UiState.Success -> {
-                snackbarHostState.showSnackbar("¡Registro exitoso!")
-                navController.navigate(AppScreens.Login.route) {
+                val emailRegistrado = viewModel.email.value
+                navController.navigate(AppScreens.VerificationPending.createRoute(emailRegistrado)) {
                     popUpTo(AppScreens.Register.route) { inclusive = true }
                 }
             }
@@ -225,20 +244,50 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(
-                        text = "Ver Términos y Condiciones",
-                        modifier = Modifier.clickable {
-                            // Esto navegará, pedirá el código "TYC", el backend lo enviará en Base64,
-                            // el móvil lo decodificará y lo mostrará en WebView.
-                            navController.navigate(AppScreens.WebViewContent.createRoute("TYC"))
-                        },
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = { isChecked = it } // El usuario también puede marcarlo manual si quiere
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "He leído y acepto los Términos y Condiciones",
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable {
+                                // Navegar al WebView
+                                navController.navigate(AppScreens.WebViewContent.createRoute("TYC"))
+                            }
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        onClick = { viewModel.registerUser() },
+                        onClick = {
+                            scope.launch {
+                                // VALIDACIÓN 1: Campos vacíos
+                                if (nombre.isBlank() || apellido.isBlank() || email.isBlank() || password.isBlank()) {
+                                    snackbarHostState.showSnackbar("Todos los datos son necesarios")
+                                }
+                                // VALIDACIÓN 2: ¿Entró a leer?
+                                else if (!hasReadTyC) {
+                                    snackbarHostState.showSnackbar("Debes entrar a leer los Términos y Condiciones")
+                                }
+                                // VALIDACIÓN 3: ¿Está marcado?
+                                else if (!isChecked) {
+                                    snackbarHostState.showSnackbar("Debes marcar la casilla para continuar")
+                                }
+                                // TODO OK -> REGISTRAR
+                                else {
+                                    viewModel.registerUser()
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .background(
                                 brush = Brush.horizontalGradient(
