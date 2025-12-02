@@ -1,6 +1,7 @@
 package com.jhomilmotors.jhomilmotorsfff.data.remote
 
 import com.jhomilmotors.jhomilmotorsfff.data.model.AuthResponse
+import com.jhomilmotors.jhomilmotorsfff.data.model.ContentResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.CustomerProfile
 import com.jhomilmotors.jhomilmotorsfff.data.model.GoogleLoginRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.LoginRequest
@@ -83,4 +84,9 @@ interface ApiService {
     // Dentro de tu interface AuthService
     @POST("api/auth/resend-verification")
     suspend fun resendVerification(@Body body: Map<String, String>): Response<Map<String, String>>
+
+    @GET("/api/content/{codigo}")
+    suspend fun getContentByCode(
+        @Path("codigo") codigo: String
+    ): Response<ContentResponse>
 }
