@@ -33,4 +33,5 @@ sealed class AppScreens(val route: String) {
     object ProductDetail : AppScreens("product_detail/{productId}") {
         fun createRoute(id: Long) = "product_detail/$id"
     }
+    object StoreMap : AppScreens("store_map")
 }

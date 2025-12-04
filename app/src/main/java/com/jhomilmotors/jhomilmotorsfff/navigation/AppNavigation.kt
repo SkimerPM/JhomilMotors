@@ -25,6 +25,7 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.auth.VerificationPendingScree
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.common.WebViewScreen
 
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.home.ProductListScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.map.StoreMapScreen
 
 @Composable
 fun AppNavigation() {
@@ -136,6 +137,9 @@ fun AppNavigation() {
                     productId = productId, // Pasamos el ID para el SavedStateHandle
                     onBack = { navController.popBackStack() }
                 )
+            }
+            composable(AppScreens.StoreMap.route) {
+                StoreMapScreen(onBack = { navController.popBackStack() })
             }
         }
     }

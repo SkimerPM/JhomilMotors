@@ -52,6 +52,8 @@ import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.SessionViewModel
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.home.CategoryViewModel
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.home.ProductOnSaleViewModel
 import kotlinx.coroutines.delay
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Place
 
 // ==========================================
 // UTILIDADES (Animaciones)
@@ -628,6 +630,7 @@ fun Principal(
             ) {
                 // Header
                 item {
+                    var showMenu by remember { mutableStateOf(false) }
                     Column(
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.background)
@@ -650,6 +653,31 @@ fun Principal(
                                     contentDescription = "Alertas",
                                     tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                                 )
+                            }
+                            Box {
+                                IconButton(onClick = { showMenu = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = "Opciones",
+                                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                                    )
+                                }
+
+                                DropdownMenu(
+                                    expanded = showMenu,
+                                    onDismissRequest = { showMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Ver ubicación de tienda") },
+                                        leadingIcon = { Icon(Icons.Default.Place, contentDescription = null) },
+                                        onClick = {
+                                            showMenu = false
+                                            // Navegar al Mapa
+                                            navController.navigate(AppScreens.StoreMap.route)
+                                        }
+                                    )
+                                    // Aquí puedes agregar más opciones luego (ej: "Ayuda", "Contacto")
+                                }
                             }
                         }
                     }
