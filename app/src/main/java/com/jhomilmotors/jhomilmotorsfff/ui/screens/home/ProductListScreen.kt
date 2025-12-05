@@ -56,8 +56,6 @@ import androidx.compose.foundation.lazy.grid.items
 fun ProductListScreen(
     categoryId: Int,
     onBack: () -> Unit,
-    // La lambda de navegación debe ser de tipo (Long) -> Unit si el NavHost usa LongType
-    // Usamos Int aquí porque la URL es Int, pero la pasamos al NavHost que la recibe como Long.
     onNavigateToDetail: (productId: Int) -> Unit,
     viewModel: ProductListViewModel = hiltViewModel()
 ) {
