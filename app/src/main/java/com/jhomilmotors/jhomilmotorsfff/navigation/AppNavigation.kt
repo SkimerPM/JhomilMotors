@@ -22,6 +22,7 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.register.Register
 import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.DetailsProduct.DetailsProductoScreen
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.auth.VerificationPendingScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.chat.ChatScreen
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.common.WebViewScreen
 
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.home.ProductListScreen
@@ -149,6 +150,9 @@ fun AppNavigation() {
                         navController.navigate(AppScreens.ProductDetail.createRoute(productId))
                     }
                 )
+            }
+            composable(AppScreens.ChatScreen.route) {
+                ChatScreen(onBack = { navController.popBackStack() })
             }
         }
     }

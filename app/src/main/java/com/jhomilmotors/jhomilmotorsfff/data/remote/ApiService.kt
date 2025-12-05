@@ -110,4 +110,7 @@ interface ApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 20
     ): Response<SpringPage<OrderResponse>>
+
+    @GET("/api/v1/ai/asistente")
+    suspend fun askAI(@Query("pregunta") pregunta: String): Response<Map<String, String>>
 }

@@ -35,4 +35,5 @@ sealed class AppScreens(val route: String) {
     }
     object StoreMap : AppScreens("store_map")
     object SearchScreen : AppScreens("search_screen")
+    object ChatScreen : AppScreens("chat_screen")
 }
