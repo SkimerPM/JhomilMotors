@@ -11,6 +11,7 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.SearchResult
 import com.jhomilmotors.jhomilmotorsfff.data.model.SpringPage
 import com.jhomilmotors.jhomilmotorsfff.data.model.UserResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.category.CategoryResponse
+import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductCatalogDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductDetailsDto
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductOnSaleDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductResponse
@@ -95,4 +96,11 @@ interface ApiService {
     suspend fun searchProducts(
         @Query("q") query: String
     ): Response<List<SearchResult>>
+
+
+    @GET("/api/v1/catalog/feed")
+    suspend fun getCatalogFeed(
+        @Query("page") page: Int,
+        @Query("size") size: Int = 10
+    ): Response<SpringPage<ProductCatalogDTO>>
 }
