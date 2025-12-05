@@ -26,6 +26,7 @@ import com.jhomilmotors.jhomilmotorsfff.ui.screens.common.WebViewScreen
 
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.home.ProductListScreen
 import com.jhomilmotors.jhomilmotorsfff.ui.screens.map.StoreMapScreen
+import com.jhomilmotors.jhomilmotorsfff.ui.screens.search.SearchScreen
 
 @Composable
 fun AppNavigation() {
@@ -140,6 +141,14 @@ fun AppNavigation() {
             }
             composable(AppScreens.StoreMap.route) {
                 StoreMapScreen(onBack = { navController.popBackStack() })
+            }
+            composable(AppScreens.SearchScreen.route) {
+                SearchScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateToDetail = { productId ->
+                        navController.navigate(AppScreens.ProductDetail.createRoute(productId))
+                    }
+                )
             }
         }
     }

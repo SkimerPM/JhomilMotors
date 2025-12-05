@@ -188,7 +188,7 @@ fun ModernTextField(
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
         )
         OutlinedTextField(
@@ -431,10 +431,10 @@ fun ProfileScreen(
 @Composable
 fun ProfileContent(
     name: String, onNameChange: (String) -> Unit,
-    lastname: String, onLastnameChange: (String) -> Unit,
+    lastname: String?, onLastnameChange: (String) -> Unit,
     email: String,
-    phoneNumber: String, onPhoneNumberChange: (String) -> Unit,
-    address: String, onAddressChange: (String) -> Unit,
+    phoneNumber: String?, onPhoneNumberChange: (String) -> Unit,
+    address: String?, onAddressChange: (String) -> Unit,
     profileState: UiState<CustomerProfile>,
     updateState: UiState<CustomerProfile>,
     logoutState: UiState<Unit>,
