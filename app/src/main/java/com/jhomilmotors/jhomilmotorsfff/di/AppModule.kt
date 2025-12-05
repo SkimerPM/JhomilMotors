@@ -14,6 +14,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -22,7 +23,7 @@ object AppModule {
 
     // ✅ BASE URL
     @Provides
-    fun provideBaseUrl(): String = "http://10.0.2.2:8080/"
+    fun provideBaseUrl(): String = "https://nonprovincial-campily-casey.ngrok-free.dev/"
 
     // ✅ LOGGING INTERCEPTOR
     @Singleton
@@ -40,6 +41,9 @@ object AppModule {
         @ApplicationContext context: Context,
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .addInterceptor(AuthInterceptor(context))
         .addInterceptor(loggingInterceptor)
         .build()

@@ -11,6 +11,7 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.SearchResult
 import com.jhomilmotors.jhomilmotorsfff.data.model.SpringPage
 import com.jhomilmotors.jhomilmotorsfff.data.model.UserResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.category.CategoryResponse
+import com.jhomilmotors.jhomilmotorsfff.data.model.order.OrderResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductCatalogDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductDetailsDto
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductOnSaleDTO
@@ -103,4 +104,10 @@ interface ApiService {
         @Query("page") page: Int,
         @Query("size") size: Int = 10
     ): Response<SpringPage<ProductCatalogDTO>>
+
+    @GET("/api/v1/orders")
+    suspend fun getMyOrders(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): Response<SpringPage<OrderResponse>>
 }
