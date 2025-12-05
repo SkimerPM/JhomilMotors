@@ -172,6 +172,7 @@ fun RegisterContent(
                     TextField(
                         value = nombre,
                         onValueChange = onNombreChange,
+                        placeholder = { Text("Introduce tu nombre", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)) },
                         modifier = Modifier.fillMaxWidth().height(62.dp).testTag("input_nombre"),
                         colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f), unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f), cursorColor = MaterialTheme.colorScheme.primary, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
                         shape = RoundedCornerShape(8.dp),
@@ -186,6 +187,7 @@ fun RegisterContent(
                     TextField(
                         value = apellido,
                         onValueChange = onApellidoChange,
+                        placeholder = { Text("Introduce tu apellido", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)) },
                         modifier = Modifier.fillMaxWidth().height(62.dp).testTag("input_apellido"),
                         colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f), unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f), cursorColor = MaterialTheme.colorScheme.primary, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
                         shape = RoundedCornerShape(8.dp),
@@ -200,6 +202,7 @@ fun RegisterContent(
                     TextField(
                         value = email,
                         onValueChange = onEmailChange,
+                        placeholder = { Text("ejemplo@correo.com", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)) },
                         modifier = Modifier.fillMaxWidth().height(62.dp).testTag("input_email"),
                         colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f), unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f), cursorColor = MaterialTheme.colorScheme.primary, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
                         shape = RoundedCornerShape(8.dp),
@@ -214,6 +217,7 @@ fun RegisterContent(
                     TextField(
                         value = password,
                         onValueChange = onPasswordChange,
+                        placeholder = { Text("******", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)) },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth().height(62.dp).testTag("input_password"),
                         colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f), unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f), cursorColor = MaterialTheme.colorScheme.primary, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),

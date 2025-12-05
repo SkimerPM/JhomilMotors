@@ -7,6 +7,7 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.GoogleLoginRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.LoginRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.RefreshRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.RegisterRequest
+import com.jhomilmotors.jhomilmotorsfff.data.model.SearchResult
 import com.jhomilmotors.jhomilmotorsfff.data.model.SpringPage
 import com.jhomilmotors.jhomilmotorsfff.data.model.UserResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.category.CategoryResponse
@@ -89,4 +90,9 @@ interface ApiService {
     suspend fun getContentByCode(
         @Path("codigo") codigo: String
     ): Response<ContentResponse>
+
+    @GET("/api/v1/buscar")
+    suspend fun searchProducts(
+        @Query("q") query: String
+    ): Response<List<SearchResult>>
 }

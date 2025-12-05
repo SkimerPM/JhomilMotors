@@ -659,7 +659,7 @@ fun Principal(
                                     Icon(
                                         imageVector = Icons.Default.MoreVert,
                                         contentDescription = "Opciones",
-                                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                                        tint = MaterialTheme.colorScheme.onBackground
                                     )
                                 }
 
@@ -691,7 +691,17 @@ fun Principal(
                             .background(MaterialTheme.colorScheme.background)
                             .padding(horizontal = 20.dp, vertical = 8.dp)
                     ) {
-                        ThemeAwareSearchBar()
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .clip(RoundedCornerShape(25.dp))
+                                .clickable {
+                                    navController.navigate(AppScreens.SearchScreen.route)
+                                }
+                        ) {
+                            ThemeAwareSearchBar()
+                        }
                     }
                 }
 
