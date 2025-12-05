@@ -11,15 +11,17 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.compose.runtime.collectAsState
 import com.jhomilmotors.jhomilmotorsfff.R
 import com.jhomilmotors.jhomilmotorsfff.data.model.UiState
+import com.jhomilmotors.jhomilmotorsfff.data.model.UserResponse
 import com.jhomilmotors.jhomilmotorsfff.navigation.AppScreens
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
@@ -37,8 +39,12 @@ fun Register(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    // Estado local del checkbox
     var isChecked by remember { mutableStateOf(false) }
     var hasReadTyC by remember { mutableStateOf(false) }
+
+    // Lógica de retorno de TyC
     val navBackStackEntry = navController.currentBackStackEntry
     val acceptedTerms by navBackStackEntry
         ?.savedStateHandle
@@ -49,7 +55,6 @@ fun Register(
         if (acceptedTerms) {
             isChecked = true
             hasReadTyC = true
-            // Limpiamos el valor para que no se quede pegado
             navBackStackEntry?.savedStateHandle?.remove<Boolean>("tyc_accepted")
         }
     }
@@ -69,6 +74,52 @@ fun Register(
         }
     }
 
+    RegisterContent(
+        nombre = nombre,
+        onNombreChange = viewModel::onNombreChange,
+        apellido = apellido,
+        onApellidoChange = viewModel::onApellidoChange,
+        email = email,
+        onEmailChange = viewModel::onEmailChange,
+        password = password,
+        onPasswordChange = viewModel::onPasswordChange,
+        isChecked = isChecked,
+        onCheckedChange = { isChecked = it },
+        registerState = registerState,
+        snackbarHostState = snackbarHostState,
+        onRegisterClick = {
+            scope.launch {
+                if (nombre.isBlank() || apellido.isBlank() || email.isBlank() || password.isBlank()) {
+                    snackbarHostState.showSnackbar("Todos los datos son necesarios")
+                } else if (!hasReadTyC) {
+                    snackbarHostState.showSnackbar("Debes entrar a leer los Términos y Condiciones")
+                } else if (!isChecked) {
+                    snackbarHostState.showSnackbar("Debes marcar la casilla para continuar")
+                } else {
+                    viewModel.registerUser()
+                }
+            }
+        },
+        onNavigateLogin = { navController.navigate(AppScreens.Login.route) },
+        onNavigateTyC = { navController.navigate(AppScreens.WebViewContent.createRoute("TYC")) },
+        onNavigatePrivacidad = { navController.navigate(AppScreens.WebViewContent.createRoute("PRIVACIDAD")) }
+    )
+}
+
+@Composable
+fun RegisterContent(
+    nombre: String, onNombreChange: (String) -> Unit,
+    apellido: String, onApellidoChange: (String) -> Unit,
+    email: String, onEmailChange: (String) -> Unit,
+    password: String, onPasswordChange: (String) -> Unit,
+    isChecked: Boolean, onCheckedChange: (Boolean) -> Unit,
+    registerState: UiState<UserResponse>,
+    snackbarHostState: SnackbarHostState,
+    onRegisterClick: () -> Unit,
+    onNavigateLogin: () -> Unit,
+    onNavigateTyC: () -> Unit,
+    onNavigatePrivacidad: () -> Unit
+) {
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
@@ -115,216 +166,103 @@ fun Register(
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    Text(
-                        text = "Nombre",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    // INPUT NOMBRE
+                    Text("Nombre", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = nombre,
-                        onValueChange = viewModel::onNombreChange,
-                        placeholder = {
-                            Text(
-                                "introduce tu nombre aquí",
-                                color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(62.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f),
-                            cursorColor = MaterialTheme.colorScheme.primary,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                        ),
+                        onValueChange = onNombreChange,
+                        modifier = Modifier.fillMaxWidth().height(62.dp).testTag("input_nombre"),
+                        colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f), unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f), cursorColor = MaterialTheme.colorScheme.primary, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
                         shape = RoundedCornerShape(8.dp),
                         enabled = registerState !is UiState.Loading
                     )
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    Text(
-                        text = "Apellido",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    // INPUT APELLIDO
+                    Text("Apellido", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = apellido,
-                        onValueChange = viewModel::onApellidoChange,
-                        placeholder = {
-                            Text(
-                                "introduce tu apellido aquí",
-                                color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(62.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f),
-                            cursorColor = MaterialTheme.colorScheme.primary,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                        ),
+                        onValueChange = onApellidoChange,
+                        modifier = Modifier.fillMaxWidth().height(62.dp).testTag("input_apellido"),
+                        colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f), unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f), cursorColor = MaterialTheme.colorScheme.primary, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
                         shape = RoundedCornerShape(8.dp),
                         enabled = registerState !is UiState.Loading
                     )
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    Text(
-                        text = "Correo",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    // INPUT EMAIL
+                    Text("Correo", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = email,
-                        onValueChange = viewModel::onEmailChange,
-                        placeholder = {
-                            Text(
-                                "tu.email@ejemplo.com",
-                                color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(62.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f),
-                            cursorColor = MaterialTheme.colorScheme.primary,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                        ),
+                        onValueChange = onEmailChange,
+                        modifier = Modifier.fillMaxWidth().height(62.dp).testTag("input_email"),
+                        colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f), unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f), cursorColor = MaterialTheme.colorScheme.primary, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
                         shape = RoundedCornerShape(8.dp),
                         enabled = registerState !is UiState.Loading
                     )
 
                     Spacer(modifier = Modifier.height(17.dp))
 
-                    Text(
-                        text = "Contraseña",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
+                    // INPUT PASSWORD
+                    Text("Contraseña", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = password,
-                        onValueChange = viewModel::onPasswordChange,
-                        placeholder = {
-                            Text(
-                                "introduce una contraseña segura",
-                                color = MaterialTheme.colorScheme.onSurface.copy(0.6f)
-                            )
-                        },
+                        onValueChange = onPasswordChange,
                         visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(62.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f),
-                            cursorColor = MaterialTheme.colorScheme.primary,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
+                        modifier = Modifier.fillMaxWidth().height(62.dp).testTag("input_password"),
+                        colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.09f), unfocusedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.03f), cursorColor = MaterialTheme.colorScheme.primary, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
                         shape = RoundedCornerShape(8.dp),
                         enabled = registerState !is UiState.Loading
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
                         Checkbox(
                             checked = isChecked,
-                            onCheckedChange = { isChecked = it } // El usuario también puede marcarlo manual si quiere
+                            onCheckedChange = onCheckedChange,
+                            modifier = Modifier.testTag("check_tyc")
                         )
-
                         Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = "He leído y acepto los Términos y Condiciones",
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.clickable {
-                                // Navegar al WebView
-                                navController.navigate(AppScreens.WebViewContent.createRoute("TYC"))
+                        Column {
+                            Text("He leído y acepto los:", fontSize = 13.sp, color = Color.Gray)
+                            Row(modifier = Modifier.wrapContentWidth()) {
+                                Text("Términos", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.clickable { onNavigateTyC() })
+                                Text(" y ", fontSize = 13.sp, color = Color.Gray)
+                                Text("Privacidad", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.clickable { onNavigatePrivacidad() })
                             }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                // VALIDACIÓN 1: Campos vacíos
-                                if (nombre.isBlank() || apellido.isBlank() || email.isBlank() || password.isBlank()) {
-                                    snackbarHostState.showSnackbar("Todos los datos son necesarios")
-                                }
-                                // VALIDACIÓN 2: ¿Entró a leer?
-                                else if (!hasReadTyC) {
-                                    snackbarHostState.showSnackbar("Debes entrar a leer los Términos y Condiciones")
-                                }
-                                // VALIDACIÓN 3: ¿Está marcado?
-                                else if (!isChecked) {
-                                    snackbarHostState.showSnackbar("Debes marcar la casilla para continuar")
-                                }
-                                // TODO OK -> REGISTRAR
-                                else {
-                                    viewModel.registerUser()
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .background(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.primary.copy(0.8f)
-                                    ),
-                                    startX = Float.POSITIVE_INFINITY,
-                                    endX = 0f
-                                ),
-                                shape = MaterialTheme.shapes.extraLarge
-                            )
-                            .fillMaxWidth()
-                            .height(62.dp),
-                        contentPadding = PaddingValues(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent
-                        ),
-                        enabled = registerState !is UiState.Loading
-                    ) {
-                        if (registerState is UiState.Loading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.background
-                            )
-                        } else {
-                            Text(
-                                text = "Registrarse",
-                                color = MaterialTheme.colorScheme.background,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.SemiBold,
-                            )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    Button(
+                        onClick = onRegisterClick,
+                        modifier = Modifier
+                            .testTag("btn_register")
+                            .background(brush = Brush.horizontalGradient(colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(0.8f))), shape = MaterialTheme.shapes.extraLarge)
+                            .fillMaxWidth()
+                            .height(62.dp),
+                        contentPadding = PaddingValues(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        enabled = registerState !is UiState.Loading
+                    ) {
+                        if (registerState is UiState.Loading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.background)
+                        } else {
+                            Text(text = "Registrarse", color = MaterialTheme.colorScheme.background, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    // ... (Resto de tu UI, "o iniciar sesión", botón Google, etc) ...
+                    // Solo asegúrate de usar onNavigateLogin() en lugar de navController.navigate(...)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -363,7 +301,7 @@ fun Register(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.clickable {
-                                navController.navigate(AppScreens.Login.route)
+                                onNavigateLogin()
                             }
                         )
                     }

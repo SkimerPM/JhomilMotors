@@ -97,6 +97,10 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:4.3.0")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
 
+    //UI Testing
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

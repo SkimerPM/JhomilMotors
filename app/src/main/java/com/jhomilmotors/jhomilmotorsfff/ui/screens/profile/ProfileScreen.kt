@@ -47,6 +47,8 @@ import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.SessionViewModel
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.platform.testTag
+import com.jhomilmotors.jhomilmotorsfff.data.model.CustomerProfile
 
 // ========== FUNCIONES DE INTENTS ==========
 fun callSupport(context: Context, phoneNumber: String) {
@@ -179,7 +181,8 @@ fun ModernTextField(
     onValueChange: (String) -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
+    testTag: String = ""
 ) {
     Column(modifier = modifier) {
         Text(
@@ -191,7 +194,7 @@ fun ModernTextField(
         OutlinedTextField(
             value = value ?: "",
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.testTag(testTag).fillMaxWidth(),
             enabled = enabled,
             readOnly = readOnly,
             singleLine = true,
@@ -215,6 +218,7 @@ fun ActionButton(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    testTag: String = "",
     enabled: Boolean = true,
     containerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
     contentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onPrimary
@@ -222,6 +226,7 @@ fun ActionButton(
     Button(
         onClick = onClick,
         modifier = modifier
+            .testTag(testTag)
             .fillMaxWidth()
             .height(56.dp),
         enabled = enabled,
@@ -370,9 +375,11 @@ fun ProfileScreen(
                 }
                 logoutViewModel.resetLogoutState()
             }
+
             is UiState.Error -> {
                 snackbarHostState.showSnackbar((logoutState as UiState.Error).message)
             }
+
             else -> {}
         }
     }
@@ -384,12 +391,68 @@ fun ProfileScreen(
                 isEditMode = false
                 viewModel.resetUpdateState()
             }
+
             is UiState.Error -> {
                 snackbarHostState.showSnackbar(state.message)
             }
+
             else -> {}
         }
     }
+
+    ProfileContent(
+        name = name, onNameChange = viewModel::onNameChange,
+        lastname = lastname, onLastnameChange = viewModel::onLastnameChange,
+        email = email,
+        phoneNumber = phoneNumber, onPhoneNumberChange = viewModel::onPhoneNumberChange,
+        address = address, onAddressChange = viewModel::onAddressChange,
+        profileState = profileState,
+        updateState = updateState,
+        logoutState = logoutState,
+        isEditMode = isEditMode,
+        onEditModeChange = { isEditMode = it },
+        snackbarHostState = snackbarHostState,
+        isSessionValid = sessionValid,
+        isCheckingSession = isChecking,
+        onBackClick = { navController.popBackStack() },
+        onSaveProfile = { viewModel.saveProfile() },
+        onCancelEdit = {
+            isEditMode = false
+            viewModel.loadProfile()
+        },
+        onLogout = { logoutViewModel.logout() },
+        onRetryLoad = { viewModel.loadProfile() },
+        onCallSupport = { callSupport(context, "51922309105") },
+        onWhatsappSupport = { contactViaWhatsapp(context, "51922309105", "Hola...") },
+        onEmailSupport = { sendEmailToSupport(context, "fatima...", "Ayuda") }
+    )
+}
+
+@Composable
+fun ProfileContent(
+    name: String, onNameChange: (String) -> Unit,
+    lastname: String, onLastnameChange: (String) -> Unit,
+    email: String,
+    phoneNumber: String, onPhoneNumberChange: (String) -> Unit,
+    address: String, onAddressChange: (String) -> Unit,
+    profileState: UiState<CustomerProfile>,
+    updateState: UiState<CustomerProfile>,
+    logoutState: UiState<Unit>,
+    isEditMode: Boolean,
+    onEditModeChange: (Boolean) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    isSessionValid: Boolean,
+    isCheckingSession: Boolean,
+    onBackClick: () -> Unit,
+    onSaveProfile: () -> Unit,
+    onCancelEdit: () -> Unit,
+    onLogout: () -> Unit,
+    onRetryLoad: () -> Unit,
+    onCallSupport: () -> Unit,
+    onWhatsappSupport: () -> Unit,
+    onEmailSupport: () -> Unit
+) {
+    val context = LocalContext.current
 
     // ===== UI PRINCIPAL =====
     Scaffold(
@@ -407,7 +470,7 @@ fun ProfileScreen(
             )
         },
         topBar = {
-            ProfileTopBar(onBackClick = { navController.popBackStack() })
+            ProfileTopBar(onBackClick = onBackClick)
         }
     ) { paddingValues ->
         Box(
@@ -417,7 +480,7 @@ fun ProfileScreen(
                 .background(MaterialTheme.colorScheme.background)
         ) {
             when {
-                isChecking || !sessionValid -> {
+                isCheckingSession || !isSessionValid -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
@@ -461,14 +524,16 @@ fun ProfileScreen(
                                         ModernTextField(
                                             label = "Nombres",
                                             value = name,
-                                            onValueChange = viewModel::onNameChange,
-                                            enabled = isEditMode && updateState !is UiState.Loading
+                                            onValueChange = onNameChange,
+                                            enabled = isEditMode && updateState !is UiState.Loading,
+                                            testTag = "input_name"
                                         )
                                         ModernTextField(
                                             label = "Apellidos",
                                             value = lastname,
-                                            onValueChange = viewModel::onLastnameChange,
-                                            enabled = isEditMode && updateState !is UiState.Loading
+                                            onValueChange = onLastnameChange,
+                                            enabled = isEditMode && updateState !is UiState.Loading,
+                                            testTag = "input_lastname"
                                         )
                                         ModernTextField(
                                             label = "Correo electrónico",
@@ -480,14 +545,16 @@ fun ProfileScreen(
                                         ModernTextField(
                                             label = "Teléfono",
                                             value = phoneNumber,
-                                            onValueChange = viewModel::onPhoneNumberChange,
-                                            enabled = isEditMode && updateState !is UiState.Loading
+                                            onValueChange = onPhoneNumberChange,
+                                            enabled = isEditMode && updateState !is UiState.Loading,
+                                            testTag = "input_phone"
                                         )
                                         ModernTextField(
                                             label = "Dirección",
                                             value = address,
-                                            onValueChange = viewModel::onAddressChange,
-                                            enabled = isEditMode && updateState !is UiState.Loading
+                                            onValueChange = onAddressChange,
+                                            enabled = isEditMode && updateState !is UiState.Loading,
+                                            testTag = "input_address"
                                         )
                                     }
                                 }
@@ -507,8 +574,9 @@ fun ProfileScreen(
                                         ActionButton(
                                             text = "Editar Perfil",
                                             icon = Icons.Default.Edit,
-                                            onClick = { isEditMode = true },
-                                            containerColor = MaterialTheme.colorScheme.primary
+                                            onClick = { onEditModeChange(true) },
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                            testTag = "btn_edit_profile"
                                         )
                                     }
                                 }
@@ -525,15 +593,13 @@ fun ProfileScreen(
                                         ActionButton(
                                             text = if (updateState is UiState.Loading) "Guardando..." else "Guardar Cambios",
                                             Icons.Default.Check,
-                                            onClick = { viewModel.saveProfile() },
+                                            onClick = onSaveProfile,
                                             enabled = updateState !is UiState.Loading,
-                                            containerColor = MaterialTheme.colorScheme.primary
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                            testTag = "btn_save_profile"
                                         )
                                         OutlinedButton(
-                                            onClick = {
-                                                isEditMode = false
-                                                viewModel.loadProfile()
-                                            },
+                                            onClick = onCancelEdit,
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(56.dp),
@@ -563,19 +629,19 @@ fun ProfileScreen(
                                         icon = Icons.Default.Phone,
                                         title = "Llamar a Soporte",
                                         subtitle = "Línea de atención al cliente",
-                                        onClick = { callSupport(context, supportPhone) }
+                                        onClick = onCallSupport
                                     )
                                     ContactOptionCard(
                                         icon = Icons.Default.Send,
                                         title = "WhatsApp",
                                         subtitle = "Chatea con nosotros",
-                                        onClick = { contactViaWhatsapp(context, supportPhone, whatsappMessage) }
+                                        onClick = onWhatsappSupport
                                     )
                                     ContactOptionCard(
                                         icon = Icons.Default.Email,
                                         title = "Correo Electrónico",
                                         subtitle = "Envíanos un mensaje",
-                                        onClick = { sendEmailToSupport(context, supportEmail, "Consulta desde la App") }
+                                        onClick = onEmailSupport
                                     )
                                 }
 
@@ -592,7 +658,7 @@ fun ProfileScreen(
                                 ActionButton(
                                     text = if (logoutState is UiState.Loading) "Cerrando sesión..." else "Cerrar Sesión",
                                     icon = Icons.AutoMirrored.Filled.ExitToApp,
-                                    onClick = { logoutViewModel.logout() },
+                                    onLogout,
                                     enabled = logoutState !is UiState.Loading && !isEditMode,
                                     containerColor = MaterialTheme.colorScheme.error,
                                     contentColor = MaterialTheme.colorScheme.onError,
@@ -623,7 +689,7 @@ fun ProfileScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Button(
-                                        onClick = { viewModel.loadProfile() },
+                                        onClick = onRetryLoad,
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = MaterialTheme.colorScheme.primary
                                         )
