@@ -27,7 +27,7 @@ class ContentViewModel @Inject constructor(
                 if (response.isSuccessful && response.body() != null) {
                     val base64String = response.body()!!.contentBase64
 
-                    // LÓGICA DEL PROFESOR: DECODIFICAR BASE64 EN ANDROID
+                    // DECODIFICAR BASE64 EN ANDROID
                     val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
                     val htmlString = String(decodedBytes, Charsets.UTF_8)
 
