@@ -1,38 +1,15 @@
 package com.jhomilmotors.jhomilmotorsfff.ui.screens.historial
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,182 +17,228 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.jhomilmotors.jhomilmotorsfff.R
-import com.jhomilmotors.jhomilmotorsfff.ui.theme.JhomilMotorsShopTheme
+import com.jhomilmotors.jhomilmotorsfff.data.model.UiState
+import com.jhomilmotors.jhomilmotorsfff.data.model.order.OrderResponse
+import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.history.HistoryViewModel
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-// --- Modelos de Datos (Solo para el diseño, luego irán en la capa de datos) ---
-
+// --- ENUMS ---
+// Mapeamos los estados que devuelve tu Backend a colores
 enum class OrderStatus(val displayName: String, val textColor: Color, val backgroundColor: Color) {
     PENDIENTE("Pendiente", Color(0xFFFFA500), Color(0xFFFFF8E1)),
+    PAGADO("Pagado", Color(0xFF3E6AD3), Color(0xFFE3F2FD)), // Agregado
     ENVIADO("Enviado", Color(0xFF3E6AD3), Color(0xFFE3F2FD)),
-    ENTREGADO("Entregado", Color(0xFF008000), Color(0xFFE8F5E9))
+    ENTREGADO("Entregado", Color(0xFF008000), Color(0xFFE8F5E9)),
+    CANCELADO("Cancelado", Color(0xFFD32F2F), Color(0xFFFFEBEE)),
+    UNKNOWN("Desconocido", Color.Gray, Color.LightGray);
+
+    companion object {
+        fun fromString(status: String): OrderStatus {
+            return try {
+                valueOf(status.uppercase())
+            } catch (e: Exception) {
+                UNKNOWN
+            }
+        }
+    }
 }
 
-data class Order(
-    val id: String,
-    val timestamp: String,
-    val total: String,
-    val status: OrderStatus,
-    val imageUrl: Int // Usamos Int para el ID del drawable de momento
-)
+// --- COMPONENTES ---
 
-//micro composables
 @Composable
-private fun OrderStatusChip(status: OrderStatus) {
+private fun OrderStatusChip(status: String) {
+    val uiStatus = OrderStatus.fromString(status)
     Box(
         modifier = Modifier
             .clip(MaterialTheme.shapes.extraLarge)
-            .background(status.backgroundColor)
-            .border(1.dp, status.textColor, MaterialTheme.shapes.extraLarge)
+            .background(uiStatus.backgroundColor)
+            .border(1.dp, uiStatus.textColor, MaterialTheme.shapes.extraLarge)
             .padding(horizontal = 10.dp, vertical = 4.dp)
     ) {
         Text(
-            text = status.displayName,
-            color = status.textColor,
+            text = uiStatus.displayName,
+            color = uiStatus.textColor,
             style = MaterialTheme.typography.labelSmall,
         )
     }
 }
 
 @Composable
-private fun OrderCard(order: Order, onClick: () -> Unit) {
+private fun OrderCard(order: OrderResponse, onClick: () -> Unit) {
+    // Formatear fecha (Backend suele mandar ISO: 2025-12-05T10:00:00)
+    val dateStr = try {
+        // Intenta formatear si viene en ISO, sino muestra como viene
+        // Nota: Para versiones viejas de Android usa SimpleDateFormat
+        order.fechaPedido.replace("T", " ").take(16)
+    } catch (e: Exception) { order.fechaPedido }
+
+    // Imagen: Usamos la del primer item si existe, sino un placeholder
+    val imageUrl = order.items.firstOrNull()?.imageUrl
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 8.dp, // El tamaño de la sombra
-                shape = MaterialTheme.shapes.large, // La misma forma que la Card
-                spotColor = MaterialTheme.colorScheme.onBackground, // Color principal de la sombra
-                ambientColor = MaterialTheme.colorScheme.onBackground // Color ambiental de la sombra
-            )
+            .shadow(4.dp, MaterialTheme.shapes.large)
             .clickable { onClick() }
             .height(130.dp),
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
-            modifier = Modifier.padding(14.dp) .height(130.dp),
+            modifier = Modifier.padding(14.dp).fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = order.imageUrl),
-                contentDescription = "Imagen de producto",
+            // Imagen Dinámica
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Producto",
+                placeholder = painterResource(R.drawable.logo_jhomil), // Tu logo como placeholder
+                error = painterResource(R.drawable.logo_jhomil),
                 modifier = Modifier
                     .size(80.dp)
                     .clip(MaterialTheme.shapes.medium)
             )
+
             Spacer(modifier = Modifier.width(16.dp))
+
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = order.timestamp, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
-                Text(text = "Pedido ${order.id}", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(18.dp))
+                Text(text = dateStr, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(text = "Pedido #${order.id}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Total: ${order.total}",
+                    text = "Total: S/${String.format("%.2f", order.total)}",
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
+
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.height(74.dp)
+                modifier = Modifier.fillMaxHeight()
             ) {
-                OrderStatusChip(status = order.status)
+                OrderStatusChip(status = order.estado)
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_chevron_right), // Necesitarás este ícono
+                    painter = painterResource(id = R.drawable.ic_chevron_right), // Asegúrate de tener este icono o usa Icons.AutoMirrored.Filled.ArrowForward
                     contentDescription = "Ver detalle",
-                    tint = Color(0xFF8C8C8C)
+                    tint = Color.Gray
                 )
             }
         }
     }
 }
 
-//principal
-@Composable
-fun HistorialScreen(navController: NavController) {
-    // --- Datos de Ejemplo (Hardcoded) ---
-    // En el futuro, estos datos vendrán de un ViewModel.
-    val sampleOrders = listOf(
-        Order("#JM-0001", "15/09/2025 - 12:35 p.m.", "S/320.00", OrderStatus.PENDIENTE, R.drawable.bateria_enerjet),
-        Order("#JM-0002", "14/09/2025 - 12:47 p.m.", "S/240.00", OrderStatus.ENVIADO, R.drawable.bateria_enerjet),
-        Order("#JM-0003", "10/09/2025 - 03:51 p.m.", "S/24.00", OrderStatus.ENTREGADO, R.drawable.bateria_enerjet)
-    )
+// --- PANTALLA PRINCIPAL ---
 
-    // --- Estado de la UI (Manejado localmente con remember) ---
-    // En el futuro, este estado también lo manejará el ViewModel.
-    var selectedTabIndex by remember { mutableStateOf(2) } // 0: En Curso, 1: Completados, 2: Todos
+@Composable
+fun HistorialScreen(
+    navController: NavController,
+    viewModel: HistoryViewModel = hiltViewModel()
+) {
+    // 1. Obtener estado del ViewModel
+    val state by viewModel.ordersState.collectAsState()
+
+    var selectedTabIndex by remember { mutableStateOf(2) } // Por defecto "Todos"
     val tabTitles = listOf("En Curso", "Completados", "Todos")
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        Spacer(modifier = Modifier.height(18.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { /* TODO: navController.popBackStack() */ }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint= MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(44.dp))
-            }
-            Text(
-                text = "Mis Pedidos",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.width(48.dp))
-        }
-
-        // --- Pestañas de Filtro (TabRow) ---
-        TabRow(
-            selectedTabIndex = selectedTabIndex,
-            containerColor = MaterialTheme.colorScheme.background
-        ) {
-            tabTitles.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    text = { Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold) },
-                    selectedContentColor = MaterialTheme.colorScheme.primary,
-                    unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+    Scaffold(
+        topBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                }
+                Text(
+                    text = "Mis Pedidos",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.weight(1f),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
+                Spacer(modifier = Modifier.width(48.dp)) // Balancear el icono de atrás
             }
         }
-
-        // --- Lógica de Filtrado (directamente en la UI por ahora) ---
-        val filteredOrders = when (selectedTabIndex) {
-            0 -> sampleOrders.filter { it.status == OrderStatus.ENVIADO || it.status == OrderStatus.PENDIENTE }
-            1 -> sampleOrders.filter { it.status == OrderStatus.ENTREGADO }
-            else -> sampleOrders // "Todos"
-        }
-
-        // --- Lista de Pedidos ---
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            items(filteredOrders) { order ->
-                OrderCard(order = order, onClick = {  })
+            // TABS
+            TabRow(selectedTabIndex = selectedTabIndex, containerColor = MaterialTheme.colorScheme.background) {
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(title) },
+                        selectedContentColor = MaterialTheme.colorScheme.primary,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // CONTENIDO
+            when (val uiState = state) {
+                is UiState.Loading -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is UiState.Error -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Ocurrió un error", color = MaterialTheme.colorScheme.error)
+                            Button(onClick = { viewModel.loadOrders() }) { Text("Reintentar") }
+                        }
+                    }
+                }
+                is UiState.Success -> {
+                    val allOrders = uiState.data
+
+                    // Lógica de Filtrado en Frontend
+                    val filteredOrders = when (selectedTabIndex) {
+                        0 -> allOrders.filter { it.estado == "PENDIENTE" || it.estado == "PAGADO" || it.estado == "ENVIADO" }
+                        1 -> allOrders.filter { it.estado == "ENTREGADO" }
+                        else -> allOrders
+                    }
+
+                    if (filteredOrders.isEmpty()) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("No tienes pedidos en esta categoría.", color = Color.Gray)
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(filteredOrders) { order ->
+                                OrderCard(
+                                    order = order,
+                                    onClick = {
+                                        // TODO: Navegar al detalle del pedido (OrderTrackingScreen)
+                                        // navController.navigate("order_detail/${order.id}")
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                else -> {}
             }
         }
-    }
-}
-
-@Preview(showBackground = true, )
-@Composable
-fun HistorialScreenPreview() {
-    JhomilMotorsShopTheme {
-        HistorialScreen(navController = rememberNavController())
     }
 }
