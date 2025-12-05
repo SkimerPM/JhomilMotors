@@ -19,7 +19,6 @@ import javax.inject.Singleton
 class GoogleAuthClient @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    // Asegúrate de que este sea tu WEB CLIENT ID
     private val WEB_CLIENT_ID = "405542436515-b698rpem79qhd87ntoqdmgfntev4ub84.apps.googleusercontent.com"
 
     // 🟢 CAMBIO 1: Agregamos 'activityContext' como parámetro

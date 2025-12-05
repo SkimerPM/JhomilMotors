@@ -1,6 +1,7 @@
 package com.jhomilmotors.jhomilmotorsfff.data.repository
 
 import com.jhomilmotors.jhomilmotorsfff.data.model.SpringPage
+import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductCatalogDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductOnSaleDTO
 import com.jhomilmotors.jhomilmotorsfff.data.remote.ApiService
 import retrofit2.Response
@@ -15,4 +16,7 @@ class HomeRepository @Inject constructor(
         return api.getProductOffer(page = page, size = 10)
     }
 
+    suspend fun getCatalogFeed(page: Int): Response<SpringPage<ProductCatalogDTO>> {
+        return api.getCatalogFeed(page, size = 10)
+    }
 }

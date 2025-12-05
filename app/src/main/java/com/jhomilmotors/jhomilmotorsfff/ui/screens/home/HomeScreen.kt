@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -21,6 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,18 +48,18 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.jhomilmotors.jhomilmotorsfff.R
 import com.jhomilmotors.jhomilmotorsfff.data.model.UiState
+import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductCatalogDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductOnSaleDTO
 import com.jhomilmotors.jhomilmotorsfff.navigation.AppScreens
 import com.jhomilmotors.jhomilmotorsfff.ui.components.JhomilLoader
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.SessionViewModel
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.home.CategoryViewModel
+import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.home.FeedViewModel
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.home.ProductOnSaleViewModel
 import kotlinx.coroutines.delay
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Place
 
 // ==========================================
-// UTILIDADES (Animaciones)
+// UTILIDADES
 // ==========================================
 
 enum class ButtonState { Pressed, Idle }
@@ -89,7 +92,7 @@ fun Modifier.bounceClick(scaleDown: Float = 0.95f, onClick: () -> Unit) = compos
 }
 
 // ==========================================
-// DATA CLASSES
+// DATA CLASSES LOCALES
 // ==========================================
 
 data class contentHeaderCarrusel(
@@ -98,15 +101,6 @@ data class contentHeaderCarrusel(
     val description: String,
     val imageResId: Int,
     val buttonText: String,
-)
-
-data class Product(
-    val id: Int,
-    val imageUrl: Int,
-    val title: String,
-    val price: Double,
-    val originalPrice: Double? = null,
-    val soldCount: String,
 )
 
 data class CategoryItem(
@@ -173,25 +167,9 @@ fun BannerCardItem(
     modifier: Modifier = Modifier
 ) {
     val isDark = isSystemInDarkTheme()
-
-    // 1. CONFIGURACIÓN DEL CÍRCULO DE FONDO ("La Bola")
-    val circleColor = if (isDark) {
-        // Modo Oscuro: Color Primario (Resplandor/Luz)
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-    } else {
-        // Modo Claro: Color Negro (Sombra/Profundidad)
-        // Esto hará que el círculo sea oscuro sobre la tarjeta clara
-        Color.Black.copy(alpha = 0.10f)
-    }
-
-    // 2. CONFIGURACIÓN DEL BRILLO (SHINE)
-    // Lo mantenemos sutil en ambos casos para no "lavar" el diseño
+    val circleColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.10f)
     val shineBrush = Brush.linearGradient(
-        colors = listOf(
-            Color.Transparent,
-            Color.White.copy(alpha = 0.1f), // 10% de opacidad, muy fino
-            Color.Transparent
-        ),
+        colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.1f), Color.Transparent),
         start = Offset(0f, 0f),
         end = Offset(1000f, 1000f)
     )
@@ -202,30 +180,23 @@ fun BannerCardItem(
             .height(160.dp)
             .bounceClick(scaleDown = 0.98f, onClick = onButtonClick),
         shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-
-            // CAPA 1: CÍRCULO DECORATIVO (FONDO)
             Box(
                 modifier = Modifier
                     .size(200.dp)
                     .align(Alignment.BottomEnd)
                     .offset(x = 40.dp, y = 40.dp)
                     .clip(CircleShape)
-                    .background(circleColor) // Usamos el color calculado arriba
+                    .background(circleColor)
             )
-
-            // CAPA 2: CONTENIDO (Texto e Imagen)
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // TEXTO
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -236,21 +207,18 @@ fun BannerCardItem(
                         text = data.title,
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            fontSize = 20.sp,
-                            letterSpacing = 0.5.sp
+                            fontSize = 20.sp
                         ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        lineHeight = 24.sp
+                        maxLines = 2
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = data.description,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
-                    Spacer(modifier = Modifier.height(14.dp))
-
+                    Spacer(modifier = Modifier.height(12.dp))
                     Button(
                         onClick = onButtonClick,
                         shape = RoundedCornerShape(50),
@@ -258,21 +226,15 @@ fun BannerCardItem(
                             containerColor = if (isDark) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                             contentColor = if (isDark) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
                         ),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
                         modifier = Modifier.height(36.dp)
                     ) {
-                        Text(
-                            text = data.buttonText,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = data.buttonText, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                     }
                 }
-
-                // IMAGEN
                 Box(
                     modifier = Modifier
-                        .weight(0.85f)
+                        .weight(0.9f)
                         .fillMaxHeight(),
                     contentAlignment = Alignment.BottomEnd
                 ) {
@@ -287,13 +249,7 @@ fun BannerCardItem(
                     )
                 }
             }
-
-            // CAPA 3: BRILLO SUTIL (OVERLAY)
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(brush = shineBrush)
-            )
+            Box(modifier = Modifier.fillMaxSize().background(brush = shineBrush))
         }
     }
 }
@@ -334,9 +290,6 @@ fun CategoryCircleItem(item: CategoryItem) {
     }
 }
 
-// ==========================================
-// TARJETA DE PRODUCTO API (CON NAVEGACIÓN)
-// ==========================================
 @Composable
 fun ProductCard(
     product: ProductOnSaleDTO,
@@ -344,13 +297,10 @@ fun ProductCard(
     onAddToCart: (Long) -> Unit,
     onViewDetail: (Long) -> Unit
 ) {
-    // Si tiene variantId, es compra directa (+), sino es ver detalle (->)
     val isDirectBuy = product.variantId != null
-
     Card(
         modifier = modifier
             .padding(bottom = 4.dp)
-            // Si tocas la tarjeta entera, vas al detalle SIEMPRE
             .bounceClick { onViewDetail(product.productId) },
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -371,18 +321,14 @@ fun ProductCard(
                     placeholder = painterResource(R.drawable.logo_jhomil),
                     error = painterResource(R.drawable.logo_jhomil)
                 )
-
-                // Badges
                 var badgeText: String? = null
                 val type = product.discountType ?: ""
-
                 if (type == "x_por_y") {
                     badgeText = "2x1"
                 } else if (product.originalPrice > product.finalPrice && product.originalPrice > 0) {
                     val discount = ((product.originalPrice - product.finalPrice) / product.originalPrice * 100).toInt()
                     if (discount > 0) badgeText = "-$discount%"
                 }
-
                 if (badgeText != null) {
                     Surface(
                         color = MaterialTheme.colorScheme.secondary,
@@ -397,35 +343,26 @@ fun ProductCard(
                         )
                     }
                 }
-
-                // === BOTÓN DE ACCIÓN ===
                 FilledIconButton(
                     onClick = {
-                        if (isDirectBuy) {
-                            onAddToCart(product.variantId!!)
-                        } else {
-                            onViewDetail(product.productId)
-                        }
+                        if (isDirectBuy) onAddToCart(product.variantId!!) else onViewDetail(product.productId)
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(8.dp)
                         .size(32.dp),
                     colors = IconButtonDefaults.filledIconButtonColors(
-                        // Primario si es comprar, Terciario si es ver detalle
                         containerColor = if (isDirectBuy) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
                     Icon(
-                        // Icono (+) si compra directa, (->) si es detalle
                         imageVector = if (isDirectBuy) Icons.Default.Add else Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = "Acción",
                         modifier = Modifier.size(16.dp)
                     )
                 }
             }
-
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = product.productName,
@@ -436,28 +373,15 @@ fun ProductCard(
                     modifier = Modifier.height(40.dp)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-
                 Row(verticalAlignment = Alignment.Bottom) {
                     if (product.finalPrice == 0.0) {
-                        Text(
-                            text = "GRATIS",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Text(text = "GRATIS", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
                     } else {
-                        Text(
-                            text = "S/${String.format("%.2f", product.finalPrice)}",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Text(text = "S/${String.format("%.2f", product.finalPrice)}", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     if (product.originalPrice > product.finalPrice) {
-                        Text(
-                            text = "S/${product.originalPrice.toInt()}",
-                            style = MaterialTheme.typography.labelSmall.copy(textDecoration = TextDecoration.LineThrough),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
+                        Text(text = "S/${product.originalPrice.toInt()}", style = MaterialTheme.typography.labelSmall.copy(textDecoration = TextDecoration.LineThrough), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                     }
                 }
             }
@@ -465,17 +389,17 @@ fun ProductCard(
     }
 }
 
-// === TARJETA LOCAL (GRID) ===
+// === TARJETA LOCAL (FEED REAL - CATALOG DTO) ===
 @Composable
 fun ProductCardLocal(
-    product: Product,
+    product: ProductCatalogDTO,
     modifier: Modifier = Modifier,
     onViewDetail: (Long) -> Unit
 ) {
     Card(
         modifier = modifier
             .padding(bottom = 4.dp)
-            .bounceClick { onViewDetail(product.id.toLong()) },
+            .bounceClick { onViewDetail(product.id) },
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -486,29 +410,31 @@ fun ProductCardLocal(
                     .fillMaxWidth()
                     .height(145.dp)
             ) {
-                Image(
-                    painter = painterResource(id = product.imageUrl),
-                    contentDescription = null,
+                AsyncImage(
+                    model = product.imagenUrl,
+                    contentDescription = product.nombre,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(R.drawable.logo_jhomil),
+                    error = painterResource(R.drawable.logo_jhomil)
                 )
                 FilledIconButton(
-                    onClick = { onViewDetail(product.id.toLong()) },
+                    onClick = { onViewDetail(product.id) },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(8.dp)
                         .size(32.dp),
                     colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.tertiary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add", modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Ver", modifier = Modifier.size(16.dp))
                 }
             }
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
-                    text = product.title,
+                    text = product.nombre,
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -517,12 +443,12 @@ fun ProductCardLocal(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "S/${String.format("%.2f", product.price)}",
+                    text = "S/${String.format("%.2f", product.precioBase)}",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = product.soldCount,
+                    text = product.marcaNombre ?: "",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -532,9 +458,9 @@ fun ProductCardLocal(
 }
 
 @Composable
-fun SkeletonCard() {
+fun SkeletonCard(modifier: Modifier = Modifier) {
     Card(
-        modifier = Modifier.width(160.dp).padding(bottom = 8.dp),
+        modifier = modifier.padding(bottom = 8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Box(modifier = Modifier.height(145.dp).fillMaxWidth().background(MaterialTheme.colorScheme.outlineVariant))
@@ -560,12 +486,14 @@ fun SectionHeader(title: String, action: String = "Ver todas") {
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
-        Text(
-            text = action,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.clickable { }
-        )
+        if (action.isNotEmpty()) {
+            Text(
+                text = action,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { }
+            )
+        }
     }
 }
 
@@ -579,12 +507,15 @@ fun Principal(
     navController: NavController,
     sessionViewModel: SessionViewModel = hiltViewModel(),
     categoryViewModel: CategoryViewModel = hiltViewModel(),
-    productOnSaleViewModel: ProductOnSaleViewModel = hiltViewModel()
+    productOnSaleViewModel: ProductOnSaleViewModel = hiltViewModel(),
+    feedViewModel: FeedViewModel = hiltViewModel()
 ) {
     val sessionValid by sessionViewModel.sessionValid.collectAsState()
     val isChecking by sessionViewModel.isChecking.collectAsState()
     val category by categoryViewModel.categories.collectAsState()
     val offerState by productOnSaleViewModel.productsOfferState.collectAsState()
+    val feedState by feedViewModel.feedState.collectAsState()
+    val isLoadingMore by feedViewModel.isLoadingMore.collectAsState()
 
     LaunchedEffect(Unit) { sessionViewModel.checkSession() }
     LaunchedEffect(sessionValid, isChecking) {
@@ -598,13 +529,6 @@ fun Principal(
         contentHeaderCarrusel(1, "Nueva Colección", "Equípate para la ruta", R.drawable.biker_header, "Ver ahora"),
         contentHeaderCarrusel(2, "Ofertas Flash", "Hasta 50% DSCTO", R.drawable.biker_header, "Comprar"),
         contentHeaderCarrusel(3, "Mantenimiento", "Todo para tu taller", R.drawable.biker_header, "Ver más")
-    )
-    // Productos dummy (Grid)
-    val mostPurchasedProducts = listOf(
-        Product(1, R.drawable.motul_oil, "Aceite Motul 7100 10W40 Sintético", 26.00, soldCount = "1.2k vendidos"),
-        Product(2, R.drawable.motul_oil, "Lubricante de Cadena C2 Road", 67.00, soldCount = "800 vendidos"),
-        Product(3, R.drawable.motul_oil, "Limpiador de frenos Motul", 90.00, soldCount = "500 vendidos"),
-        Product(4, R.drawable.motul_oil, "Casco LS2 Stream Evo", 250.00, soldCount = "150 vendidos")
     )
 
     if (isChecking || !sessionValid) {
@@ -628,7 +552,7 @@ fun Principal(
                     .padding(paddingValues),
                 contentPadding = PaddingValues(bottom = 100.dp)
             ) {
-                // Header
+                // HEADER
                 item {
                     var showMenu by remember { mutableStateOf(false) }
                     Column(
@@ -662,7 +586,6 @@ fun Principal(
                                         tint = MaterialTheme.colorScheme.onBackground
                                     )
                                 }
-
                                 DropdownMenu(
                                     expanded = showMenu,
                                     onDismissRequest = { showMenu = false }
@@ -672,11 +595,9 @@ fun Principal(
                                         leadingIcon = { Icon(Icons.Default.Place, contentDescription = null) },
                                         onClick = {
                                             showMenu = false
-                                            // Navegar al Mapa
                                             navController.navigate(AppScreens.StoreMap.route)
                                         }
                                     )
-                                    // Aquí puedes agregar más opciones luego (ej: "Ayuda", "Contacto")
                                 }
                             }
                         }
@@ -691,15 +612,7 @@ fun Principal(
                             .background(MaterialTheme.colorScheme.background)
                             .padding(horizontal = 20.dp, vertical = 8.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                                .clip(RoundedCornerShape(25.dp))
-                                .clickable {
-                                    navController.navigate(AppScreens.SearchScreen.route)
-                                }
-                        ) {
+                        Box(modifier = Modifier.clickable { navController.navigate(AppScreens.SearchScreen.route) }) {
                             ThemeAwareSearchBar()
                         }
                     }
@@ -719,7 +632,6 @@ fun Principal(
                             }
                         }
                     }
-
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth()) { page ->
                             BannerCardItem(
@@ -758,7 +670,6 @@ fun Principal(
                                             nombre = cat.nombre,
                                             iconUri = cat.urlImagenCompleta,
                                             onClick = {
-                                                // Navegación a la lista filtrada por categoría
                                                 navController.navigate(AppScreens.ProductList.createRoute(cat.id.toInt()))
                                             }
                                         )
@@ -779,7 +690,7 @@ fun Principal(
                     when (val state = offerState) {
                         is UiState.Loading -> {
                             LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                items(3) { SkeletonCard() }
+                                items(3) { SkeletonCard(modifier = Modifier.width(160.dp)) }
                             }
                         }
                         is UiState.Error -> {
@@ -793,16 +704,13 @@ fun Principal(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     items(state.data.content) { product ->
-                                        // IMPLEMENTACIÓN DE LA NAVEGACIÓN REAL
                                         ProductCard(
                                             product = product,
                                             modifier = Modifier.width(160.dp),
                                             onAddToCart = { variantId ->
-                                                // Acción: Añadir al carrito (Impresión por ahora)
-                                                println("ADD TO CART: Variant $variantId")
+                                                println("Añadir al carrito Variante: $variantId")
                                             },
                                             onViewDetail = { productId ->
-                                                // Acción: Navegar al detalle del producto
                                                 navController.navigate(AppScreens.ProductDetail.createRoute(productId))
                                             }
                                         )
@@ -818,36 +726,69 @@ fun Principal(
 
                 item { Spacer(modifier = Modifier.height(32.dp)) }
 
-                // Más Vendidos (Grid Vertical)
-                item { SectionHeader(title = "Más Vendidos", action = "") }
+                // ==========================================
+                // NUESTROS PRODUCTOS (FEED REAL + INFINITE SCROLL)
+                // ==========================================
+                item { SectionHeader(title = "Nuestros Productos", action = "") }
                 item { Spacer(modifier = Modifier.height(16.dp)) }
                 item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                    ) {
-                        val rows = mostPurchasedProducts.chunked(2)
-                        rows.forEach { rowItems ->
+                    when (val state = feedState) {
+                        is UiState.Loading -> {
+                            // Skeletons de carga inicial
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                rowItems.forEach { product ->
-                                    ProductCardLocal(
-                                        product = product,
-                                        modifier = Modifier.weight(1f),
-                                        onViewDetail = { productId ->
-                                            // Navegación en productos dummy también (usando ID fake)
-                                            navController.navigate(AppScreens.ProductDetail.createRoute(productId))
+                                SkeletonCard(modifier = Modifier.weight(1f))
+                                SkeletonCard(modifier = Modifier.weight(1f))
+                            }
+                        }
+                        is UiState.Error -> {
+                            Text("Error cargando productos", modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.error)
+                        }
+                        is UiState.Success -> {
+                            val products = state.data
+                            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+                                val rows = products.chunked(2)
+                                rows.forEachIndexed { rowIndex, rowItems ->
+                                    // DETECCIÓN DE SCROLL: Si pintamos la penúltima fila, pedimos más
+                                    if (rowIndex >= rows.size - 2) {
+                                        SideEffect { feedViewModel.loadNextPage() }
+                                    }
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        rowItems.forEach { dto ->
+                                            ProductCardLocal(
+                                                product = dto,
+                                                modifier = Modifier.weight(1f),
+                                                onViewDetail = { id ->
+                                                    navController.navigate(AppScreens.ProductDetail.createRoute(id))
+                                                }
+                                            )
                                         }
-                                    )
-                                }
-                                if (rowItems.size == 1) {
-                                    Spacer(modifier = Modifier.weight(1f))
+                                        if (rowItems.size == 1) {
+                                            Spacer(modifier = Modifier.weight(1f))
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(16.dp))
                                 }
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                        else -> {}
+                    }
+                }
+
+                // LOADER INFERIOR (PAGINACIÓN)
+                if (isLoadingMore) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(32.dp), color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
