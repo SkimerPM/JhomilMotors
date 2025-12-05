@@ -27,23 +27,20 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.UiState
 import com.jhomilmotors.jhomilmotorsfff.data.model.order.OrderResponse
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.history.HistoryViewModel
 
-// --- 1. ENUM DE ESTADOS (COINCIDE CON BACKEND) ---
+// --- 1. ENUM PARA COLORES Y TEXTOS ---
 enum class OrderStatus(val displayName: String, val textColor: Color, val backgroundColor: Color) {
-    // Estados Activos (Grupo Pendientes)
-    PENDIENTE("Pendiente", Color(0xFFE65100), Color(0xFFFFF3E0)),    // Naranja Fuerte
+    PENDIENTE("Pendiente", Color(0xFFE65100), Color(0xFFFFF3E0)),    // Naranja
     PAGADO("Pagado", Color(0xFF1565C0), Color(0xFFE3F2FD)),         // Azul
     PREPARANDO("Preparando", Color(0xFF6A1B9A), Color(0xFFF3E5F5)), // Morado
-    ENVIADO("Enviado", Color(0xFF0277BD), Color(0xFFE1F5FE)),       // Celeste Oscuro
-
-    // Estados Finales
+    ENVIADO("Enviado", Color(0xFF0277BD), Color(0xFFE1F5FE)),       // Celeste
     ENTREGADO("Entregado", Color(0xFF2E7D32), Color(0xFFE8F5E9)),   // Verde
     CANCELADO("Cancelado", Color(0xFFC62828), Color(0xFFFFEBEE)),   // Rojo
-
     UNKNOWN("Desconocido", Color.Gray, Color.LightGray);
 
     companion object {
         fun fromString(status: String): OrderStatus {
             return try {
+                // Convierte el string del backend (ej: "PENDIENTE") al Enum
                 valueOf(status.uppercase())
             } catch (e: Exception) {
                 UNKNOWN
@@ -52,7 +49,7 @@ enum class OrderStatus(val displayName: String, val textColor: Color, val backgr
     }
 }
 
-// --- 2. COMPONENTES DE UI ---
+// --- 2. COMPONENTES VISUALES (Chip y Card) ---
 
 @Composable
 private fun OrderStatusChip(status: String) {
@@ -75,20 +72,19 @@ private fun OrderStatusChip(status: String) {
 
 @Composable
 private fun OrderCard(order: OrderResponse, onClick: () -> Unit) {
-    // Formateo simple de fecha (corta el String ISO)
     val dateStr = if (order.fechaPedido.length >= 16) {
         order.fechaPedido.replace("T", " ").substring(0, 16)
     } else order.fechaPedido
 
-    // Obtenemos la primera imagen disponible o un placeholder
+    // Tomamos la primera imagen de los items, o null si no hay
     val imageUrl = order.items.firstOrNull()?.imageUrl
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(elevation = 4.dp, shape = MaterialTheme.shapes.large)
+            .shadow(4.dp, MaterialTheme.shapes.large)
             .clickable { onClick() }
-            .height(135.dp), // Altura fija para uniformidad
+            .height(135.dp),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -98,7 +94,7 @@ private fun OrderCard(order: OrderResponse, onClick: () -> Unit) {
                 .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagen del Producto
+            // Imagen
             AsyncImage(
                 model = imageUrl,
                 contentDescription = "Producto",
@@ -107,46 +103,41 @@ private fun OrderCard(order: OrderResponse, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(80.dp)
                     .clip(MaterialTheme.shapes.medium)
-                    .background(Color.Gray.copy(alpha = 0.1f)) // Fondo gris si carga
+                    .background(Color.Gray.copy(alpha = 0.1f))
             )
-
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Información del Pedido
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center
-            ) {
+            // Textos
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                 Text(
                     text = dateStr,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Código: ${order.codigo ?: order.id}", // Muestra el código o el ID
+                    text = "Pedido #${order.id}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Total: S/${String.format("%.2f", order.total)}",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
 
-            // Estado y Flecha
+            // Estado
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxHeight()
             ) {
                 OrderStatusChip(status = order.estado)
-
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_chevron_right), // Icono flecha
-                    contentDescription = "Ver detalle",
+                    painter = painterResource(id = R.drawable.ic_chevron_right), // TU FLECHITA
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
@@ -155,7 +146,7 @@ private fun OrderCard(order: OrderResponse, onClick: () -> Unit) {
     }
 }
 
-// --- 3. PANTALLA PRINCIPAL (HISTORIAL) ---
+// --- 3. PANTALLA PRINCIPAL ---
 
 @Composable
 fun HistorialScreen(
@@ -164,7 +155,7 @@ fun HistorialScreen(
 ) {
     val state by viewModel.ordersState.collectAsState()
 
-    // 0: Pendientes (Activos), 1: Entregados, 2: Todos
+    // Índice de la pestaña seleccionada: 0=Pendientes, 1=Entregados, 2=Todos
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("Pendientes", "Entregados", "Todos")
 
@@ -194,7 +185,7 @@ fun HistorialScreen(
                     Spacer(modifier = Modifier.width(48.dp))
                 }
 
-                // Tabs
+                // Pestañas (Tabs)
                 TabRow(
                     selectedTabIndex = selectedTabIndex,
                     containerColor = MaterialTheme.colorScheme.background,
@@ -207,7 +198,7 @@ fun HistorialScreen(
                             text = {
                                 Text(
                                     text = title,
-                                    fontWeight = if(selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
+                                    fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
                         )
@@ -220,7 +211,7 @@ fun HistorialScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background) // Fondo general
+                .background(MaterialTheme.colorScheme.background)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -233,12 +224,7 @@ fun HistorialScreen(
                 is UiState.Error -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "No pudimos cargar tus pedidos",
-                                color = MaterialTheme.colorScheme.error,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(Modifier.height(8.dp))
+                            Text("No pudimos cargar tus pedidos", color = MaterialTheme.colorScheme.error)
                             Button(onClick = { viewModel.loadOrders() }) { Text("Reintentar") }
                         }
                     }
@@ -246,20 +232,21 @@ fun HistorialScreen(
                 is UiState.Success -> {
                     val allOrders = uiState.data
 
-                    // LÓGICA DE FILTRADO (Pendientes vs Entregados)
                     val filteredOrders = when (selectedTabIndex) {
                         0 -> allOrders.filter {
-                            // "Pendientes" agrupa todo lo que está en proceso
-                            it.estado == "PENDIENTE" ||
-                                    it.estado == "PAGADO" ||
-                                    it.estado == "PREPARANDO" ||
-                                    it.estado == "ENVIADO"
+                            // Normalizamos el estado que viene del backend
+                            val s = it.estado.uppercase().trim()
+
+                            s == "PENDIENTE" ||
+                                    s == "PAGADO" ||
+                                    s == "PREPARANDO" ||
+                                    s == "ENVIADO"
                         }
                         1 -> allOrders.filter {
-                            // Solo lo finalizado exitosamente
-                            it.estado == "ENTREGADO"
+                            val s = it.estado.uppercase().trim()
+                            s == "ENTREGADO"
                         }
-                        else -> allOrders // "Todos" incluye Cancelados también
+                        else -> allOrders // PESTAÑA TODOS
                     }
 
                     if (filteredOrders.isEmpty()) {
@@ -273,7 +260,7 @@ fun HistorialScreen(
                                 )
                                 Spacer(Modifier.height(16.dp))
                                 Text(
-                                    text = "No hay pedidos en esta sección",
+                                    text = "No hay pedidos aquí",
                                     color = Color.Gray,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
@@ -288,6 +275,7 @@ fun HistorialScreen(
                                 OrderCard(
                                     order = order,
                                     onClick = {
+                                        // Aquí irías al detalle si lo tuvieras
                                     }
                                 )
                             }
