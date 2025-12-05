@@ -15,6 +15,7 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.cart.CouponRequestDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.cart.CreateCartItemRequestDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.cart.UpdateCartItemRequestDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.category.CategoryResponse
+import com.jhomilmotors.jhomilmotorsfff.data.model.order.OrderResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductCatalogDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductDetailsDto
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductOnSaleDTO
@@ -34,7 +35,6 @@ interface ApiService {
     //-.####### Autenticación #######
     @POST("/api/users")
     suspend fun register(
-        //qué enviaremos:
         @Body request: RegisterRequest,
     ) : Response<UserResponse>
 
@@ -82,7 +82,6 @@ interface ApiService {
     ) : Response<SpringPage<ProductOnSaleDTO>>
 
     // Endpoint para login con Google
-
     @POST("/api/auth/google")
     suspend fun googleLogin(
         @Body request: GoogleLoginRequest
@@ -102,27 +101,27 @@ interface ApiService {
         @Query("q") query: String
     ): Response<List<SearchResult>>
 
-
     @GET("/api/v1/catalog/feed")
     suspend fun getCatalogFeed(
         @Query("page") page: Int,
         @Query("size") size: Int = 10
     ): Response<SpringPage<ProductCatalogDTO>>
 
-    // Obtener carrito
+    // ==========================
+    // 🛒 CARRITO DE COMPRAS
+    // ==========================
+
     @GET("api/v1/cart")
     suspend fun getCart(
         @Query("sessionId") sessionId: String? = null
     ): Response<CartDTO>
 
-    // Agregar ítem
     @POST("api/v1/cart/items")
     suspend fun addItem(
         @Body request: CreateCartItemRequestDTO,
         @Query("sessionId") sessionId: String? = null
     ): Response<CartDTO>
 
-    // Actualizar cantidad
     @PUT("api/v1/cart/items/{itemId}")
     suspend fun updateItem(
         @Path("itemId") itemId: Long,
@@ -130,23 +129,30 @@ interface ApiService {
         @Query("sessionId") sessionId: String? = null
     ): Response<CartDTO>
 
-    // Eliminar ítem
     @DELETE("api/v1/cart/items/{itemId}")
     suspend fun removeItem(
         @Path("itemId") itemId: Long,
         @Query("sessionId") sessionId: String? = null
     ): Response<CartDTO>
 
-    // Aplicar cupón
     @PUT("api/v1/cart/coupon")
     suspend fun applyCoupon(
         @Body request: CouponRequestDTO,
         @Query("sessionId") sessionId: String? = null
     ): Response<CartDTO>
 
-    // Remover cupón
     @DELETE("api/v1/cart/coupon")
     suspend fun removeCoupon(
         @Query("sessionId") sessionId: String? = null
     ): Response<CartDTO>
+
+    // ==========================
+    // 📦 PEDIDOS / ORDENES (Lo nuevo del remoto)
+    // ==========================
+
+    @GET("/api/v1/orders")
+    suspend fun getMyOrders(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): Response<SpringPage<OrderResponse>>
 }

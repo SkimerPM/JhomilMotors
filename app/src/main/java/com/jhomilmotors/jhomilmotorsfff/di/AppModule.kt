@@ -16,14 +16,18 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    // ✅ BASE URL: Mantenemos la local (10.0.2.2) para que sigas probando en el emulador.
+    // Si necesitas usar ngrok, comenta esta línea y descomenta la otra.
     @Provides
     fun provideBaseUrl(): String = "http://10.0.2.2:8080/"
+    // fun provideBaseUrl(): String = "https://nonprovincial-campily-casey.ngrok-free.dev/"
 
     @Singleton
     @Provides
@@ -33,13 +37,18 @@ object AppModule {
         return interceptor
     }
 
+    // ✅ OKHTTP CLIENT COMBINADO
+    // Incluye tus interceptors Y los timeouts del remoto para mejor conexión.
     @Singleton
     @Provides
     fun provideOkHttpClient(
         @ApplicationContext context: Context,
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(AuthInterceptor(context)) // Tu interceptor de token
+        .connectTimeout(60, TimeUnit.SECONDS) // Del remoto
+        .readTimeout(60, TimeUnit.SECONDS)    // Del remoto
+        .writeTimeout(60, TimeUnit.SECONDS)   // Del remoto
+        .addInterceptor(AuthInterceptor(context)) // Tu interceptor corregido
         .addInterceptor(loggingInterceptor)
         .build()
 
@@ -54,7 +63,7 @@ object AppModule {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    // ✅ ÚNICO PROVEEDOR DE API SERVICE (Maneja Auth, Productos y Carrito)
+    // ✅ ÚNICO PROVEEDOR DE API SERVICE
     @Singleton
     @Provides
     fun provideApiService(retrofit: Retrofit): ApiService =
@@ -74,6 +83,8 @@ object AppModule {
     fun provideGoogleAuthClient(@ApplicationContext context: Context): GoogleAuthClient {
         return GoogleAuthClient(context)
     }
+
+    // ✅ PROVEEDOR DE REPOSITORIO DE CARRITO (Mantenido de tu local)
     @Provides
     @Singleton
     fun provideCartRepository(api: ApiService): CartRepository {
