@@ -102,6 +102,9 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    //Iconos
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
