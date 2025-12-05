@@ -72,6 +72,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+    implementation("androidx.compose.material:material-icons-extended:1.7.5")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     implementation("com.airbnb.android:lottie-compose:6.4.0")

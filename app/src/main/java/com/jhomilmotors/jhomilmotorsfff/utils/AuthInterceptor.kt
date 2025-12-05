@@ -1,4 +1,3 @@
-// utils/AuthInterceptor.kt
 package com.jhomilmotors.jhomilmotorsfff.utils
 
 import android.content.Context
@@ -22,14 +21,13 @@ class AuthInterceptor(
         var request = chain.request()
         val accessToken = TokenManager.getAccessToken(appContext)
         val path = request.url.encodedPath
-        val method = request.method
 
-        // Detectar endpoints especiales
+        // Detectar endpoints especiales de Auth para no interceptarlos
         val isAuthEndpoint = path.contains("/login") ||
                 path.contains("/register") ||
                 path.contains("/refresh")
 
-        // Solo agregar token en endpoints no-auth
+        // 1. Agregar el Token a la petición original si existe
         if (!isAuthEndpoint && !accessToken.isNullOrBlank()) {
             request = request.newBuilder()
                 .addHeader("Authorization", "Bearer $accessToken")
@@ -43,20 +41,33 @@ class AuthInterceptor(
 
         var response = chain.proceed(request)
 
-        // IMPORTANTE: Solo hacer refresh en GET, nunca en PUT/POST/DELETE
-        if (response.code == 401 && !isAuthEndpoint && method == "GET") {
-            Log.w("AuthInterceptor", "401 recibido, intentando refresh...")
+        // 2. MANEJO DE ERROR 401 (Token Vencido)
+        // CORRECCIÓN: Quitamos "&& method == 'GET'" para que funcione en POST, PUT, DELETE también.
+        if (response.code == 401 && !isAuthEndpoint) {
+
+            Log.w("AuthInterceptor", "⚠️ 401 detectado en ${request.method} $path. Intentando renovar token...")
+
+            // Cerramos la respuesta anterior para liberar recursos
             response.close()
 
+            // Intentamos renovar el token (Sincronizado)
             val refreshed = runBlocking { tryRefreshToken(appContext) }
 
             if (refreshed) {
                 val newAccessToken = TokenManager.getAccessToken(appContext)
-                val newRequest = request.newBuilder()
-                    .removeHeader("Authorization")
-                    .addHeader("Authorization", "Bearer $newAccessToken")
-                    .build()
-                response = chain.proceed(newRequest)
+
+                if (newAccessToken != null) {
+                    Log.i("AuthInterceptor", "🔄 Reintentando petición original con NUEVO token...")
+
+                    // Creamos una nueva petición idéntica pero con el token nuevo
+                    val newRequest = request.newBuilder()
+                        .removeHeader("Authorization")
+                        .addHeader("Authorization", "Bearer $newAccessToken")
+                        .build()
+
+                    // Reintentamos la llamada automáticamente
+                    response = chain.proceed(newRequest)
+                }
             }
         }
 
@@ -66,13 +77,15 @@ class AuthInterceptor(
     private suspend fun tryRefreshToken(context: Context): Boolean {
         val refreshToken = TokenManager.getRefreshToken(context)
         if (refreshToken.isNullOrBlank()) {
+            Log.e("AuthInterceptor", "❌ No hay refresh token disponible. Cerrando sesión.")
             TokenManager.clear(context)
             return false
         }
 
         return try {
+            // Creamos un retrofit temporal independiente para evitar ciclos de inyección
             val retrofit = Retrofit.Builder()
-                .baseUrl("http://10.0.2.2:8080/")
+                .baseUrl("http://10.0.2.2:8080/") // Asegúrate que esta URL coincida con AppModule
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
 
@@ -85,15 +98,15 @@ class AuthInterceptor(
             if (response.isSuccessful && response.body() != null) {
                 val newAuth = response.body()!!
                 TokenManager.saveTokens(context, newAuth.accessToken, newAuth.refreshToken)
-                Log.d("AuthInterceptor", "✅ Token refreshed")
+                Log.d("AuthInterceptor", "✅ Token renovado exitosamente.")
                 true
             } else {
-                Log.e("AuthInterceptor", "Refresh failed: ${response.code()}")
+                Log.e("AuthInterceptor", "❌ Falló la renovación del token: ${response.code()}")
                 TokenManager.clear(context)
                 false
             }
         } catch (e: Exception) {
-            Log.e("AuthInterceptor", "Refresh error: ${e.message}")
+            Log.e("AuthInterceptor", "❌ Error crítico al renovar token: ${e.message}")
             TokenManager.clear(context)
             false
         }

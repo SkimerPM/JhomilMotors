@@ -10,6 +10,10 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.RegisterRequest
 import com.jhomilmotors.jhomilmotorsfff.data.model.SearchResult
 import com.jhomilmotors.jhomilmotorsfff.data.model.SpringPage
 import com.jhomilmotors.jhomilmotorsfff.data.model.UserResponse
+import com.jhomilmotors.jhomilmotorsfff.data.model.cart.CartDTO
+import com.jhomilmotors.jhomilmotorsfff.data.model.cart.CouponRequestDTO
+import com.jhomilmotors.jhomilmotorsfff.data.model.cart.CreateCartItemRequestDTO
+import com.jhomilmotors.jhomilmotorsfff.data.model.cart.UpdateCartItemRequestDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.category.CategoryResponse
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductCatalogDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductDetailsDto
@@ -17,6 +21,7 @@ import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductOnSaleDTO
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -103,4 +108,45 @@ interface ApiService {
         @Query("page") page: Int,
         @Query("size") size: Int = 10
     ): Response<SpringPage<ProductCatalogDTO>>
+
+    // Obtener carrito
+    @GET("api/v1/cart")
+    suspend fun getCart(
+        @Query("sessionId") sessionId: String? = null
+    ): Response<CartDTO>
+
+    // Agregar ítem
+    @POST("api/v1/cart/items")
+    suspend fun addItem(
+        @Body request: CreateCartItemRequestDTO,
+        @Query("sessionId") sessionId: String? = null
+    ): Response<CartDTO>
+
+    // Actualizar cantidad
+    @PUT("api/v1/cart/items/{itemId}")
+    suspend fun updateItem(
+        @Path("itemId") itemId: Long,
+        @Body request: UpdateCartItemRequestDTO,
+        @Query("sessionId") sessionId: String? = null
+    ): Response<CartDTO>
+
+    // Eliminar ítem
+    @DELETE("api/v1/cart/items/{itemId}")
+    suspend fun removeItem(
+        @Path("itemId") itemId: Long,
+        @Query("sessionId") sessionId: String? = null
+    ): Response<CartDTO>
+
+    // Aplicar cupón
+    @PUT("api/v1/cart/coupon")
+    suspend fun applyCoupon(
+        @Body request: CouponRequestDTO,
+        @Query("sessionId") sessionId: String? = null
+    ): Response<CartDTO>
+
+    // Remover cupón
+    @DELETE("api/v1/cart/coupon")
+    suspend fun removeCoupon(
+        @Query("sessionId") sessionId: String? = null
+    ): Response<CartDTO>
 }

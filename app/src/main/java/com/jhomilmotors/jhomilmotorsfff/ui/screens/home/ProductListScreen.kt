@@ -1,123 +1,208 @@
 package com.jhomilmotors.jhomilmotorsfff.ui.screens.home
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+// IMPORTS DE ICONOS BONITOS (Requieren la librería Extended)
+import androidx.compose.material.icons.outlined.BrokenImage
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.jhomilmotors.jhomilmotorsfff.data.model.UiState
 import com.jhomilmotors.jhomilmotorsfff.data.model.product.ProductResponse
+import com.jhomilmotors.jhomilmotorsfff.ui.components.JhomilLoader
 import com.jhomilmotors.jhomilmotorsfff.ui.viewmodels.home.ProductListViewModel
-import androidx.compose.foundation.lazy.grid.items
+
+// ==========================================
+// UTILIDAD: BOUNCE CLICK
+// ==========================================
+enum class ListButtonState { Pressed, Idle }
+
+fun Modifier.bounceClickList(scaleDown: Float = 0.95f, onClick: () -> Unit) = composed {
+    var buttonState by remember { mutableStateOf(ListButtonState.Idle) }
+    val scale by animateFloatAsState(if (buttonState == ListButtonState.Pressed) scaleDown else 1f, label = "bounce")
+
+    this
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
+        .clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick
+        )
+        .pointerInput(buttonState) {
+            awaitPointerEventScope {
+                buttonState = if (buttonState == ListButtonState.Pressed) {
+                    waitForUpOrCancellation()
+                    ListButtonState.Idle
+                } else {
+                    awaitFirstDown(false)
+                    ListButtonState.Pressed
+                }
+            }
+        }
+}
+
 // ----------------------------------------------------------------------
-// 1. LA PANTALLA CONTENEDORA (Stateful Wrapper)
+// 1. LA PANTALLA CONTENEDORA
 // ----------------------------------------------------------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductListScreen(
     categoryId: Int,
+    categoryName: String,
     onBack: () -> Unit,
     onNavigateToDetail: (productId: Int) -> Unit,
     viewModel: ProductListViewModel = hiltViewModel()
 ) {
-    // Observar el estado (StateFlow)
     val state by viewModel.products.collectAsState()
 
-    // Cargar datos al entrar (Disparador único)
     LaunchedEffect(categoryId) {
-        // La carga se inicia en el 'init' del VM, pero si queremos recargar por cambio de ID, se hace aquí:
         viewModel.loadProducts(categoryId)
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Productos") },
+                title = {
+                    Text(
+                        "Productos",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Regresar"
+                            contentDescription = "Regresar",
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                ),
+                modifier = Modifier.shadow(elevation = 2.dp)
             )
         }
     ) { padding ->
         Box(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
-                .background(Color(0xFFF9F9F9))
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             when (val currentState = state) {
                 is UiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        JhomilLoader(modifier = Modifier.size(150.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "Buscando productos...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                        )
+                    }
                 }
 
                 is UiState.Error -> {
                     Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp)
                     ) {
-                        Text(text = "Ocurrió un error", color = Color.Red)
-                        Text(text = currentState.message, style = MaterialTheme.typography.bodySmall)
+                        Icon(
+                            // Icono: Imagen Rota (Outlined)
+                            painter = rememberVectorPainter(Icons.Outlined.BrokenImage),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "¡Ups! Algo salió mal.",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = currentState.message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(onClick = { viewModel.loadProducts(categoryId) }) {
+                            Text("Reintentar")
+                        }
                     }
                 }
 
                 is UiState.Success -> {
                     if (currentState.data.isEmpty()) {
-                        Text(
-                            text = "No hay productos en esta categoría",
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        // --- EMPTY STATE ---
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(24.dp)
+                        ) {
+                            Image(
+                                // Icono: Caja de inventario (Outlined)
+                                painter = rememberVectorPainter(Icons.Outlined.Inventory2),
+                                contentDescription = null,
+                                modifier = Modifier.size(120.dp).alpha(0.5f),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No hay productos aquí",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                            )
+                            Text(
+                                text = "Pronto añadiremos más novedades para esta categoría.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     } else {
-                        // Pasamos la lista y la ACCIÓN de navegación a la cuadrícula
                         ProductGrid(
                             products = currentState.data,
-                            onProductClick = onNavigateToDetail // ⬅️ Enlazamos el evento
+                            onProductClick = onNavigateToDetail,
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 32.dp)
                         )
                     }
                 }
@@ -132,10 +217,14 @@ fun ProductListScreen(
 // ----------------------------------------------------------------------
 
 @Composable
-fun ProductGrid(products: List<ProductResponse>, onProductClick: (Int) -> Unit) {
+fun ProductGrid(
+    products: List<ProductResponse>,
+    onProductClick: (Int) -> Unit,
+    contentPadding: PaddingValues
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
@@ -144,10 +233,8 @@ fun ProductGrid(products: List<ProductResponse>, onProductClick: (Int) -> Unit) 
             items = products,
             key = { it.id }
         ) { product ->
-            // Le pasamos el producto y la acción con su ID
             ProductCardItem(
                 product = product,
-                // Al hacer clic en la tarjeta, llamamos a la lambda superior
                 onItemClick = { onProductClick(product.id.toInt()) }
             )
         }
@@ -155,7 +242,7 @@ fun ProductGrid(products: List<ProductResponse>, onProductClick: (Int) -> Unit) 
 }
 
 // ----------------------------------------------------------------------
-// 3. TARJETA INDIVIDUAL (El Diseño)
+// 3. TARJETA INDIVIDUAL
 // ----------------------------------------------------------------------
 
 @Composable
@@ -163,48 +250,53 @@ fun ProductCardItem(product: ProductResponse, onItemClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(260.dp)
-            .clickable { onItemClick() },
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+            .bounceClickList { onItemClick() },
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column {
             // --- IMAGEN DEL PRODUCTO ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .background(Color.White),
+                    .height(150.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
                     model = product.imagenUrl,
                     contentDescription = product.nombre,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    // Iconos: Imagen (Outlined) y Error (Outlined)
+                    placeholder = rememberVectorPainter(Icons.Outlined.Image),
+                    error = rememberVectorPainter(Icons.Outlined.BrokenImage)
                 )
             }
 
-            // --- DETALLES (Texto y Precio) ---
+            // --- DETALLES ---
             Column(
                 modifier = Modifier.padding(12.dp)
             ) {
-                // Marca (si existe)
-                product.marcaNombre?.let { marca ->
-                    Text(
-                        text = marca.uppercase(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray,
-                        fontSize = 10.sp
-                    )
-                }
+                Text(
+                    text = product.marcaNombre?.uppercase() ?: "JHOMIL MOTORS",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-                // Nombre del producto
+                Spacer(modifier = Modifier.height(4.dp))
+
                 Text(
                     text = product.nombre,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.height(40.dp)
@@ -212,12 +304,12 @@ fun ProductCardItem(product: ProductResponse, onItemClick: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Precio
                 Text(
                     text = "S/ ${String.format("%.2f", product.precioBase)}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.ExtraBold
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

@@ -38,6 +38,7 @@ fun AppNavigation() {
 
             val mainScreenRoutes = listOf(
                 AppScreens.HomeScreen.route,
+                AppScreens.ProductList.route,
                 AppScreens.CartScreen.route,
                 AppScreens.OrdersScreen.route,
                 AppScreens.ProfileScreen.route
@@ -108,19 +109,20 @@ fun AppNavigation() {
                 )
             }
             composable(
-                route = AppScreens.ProductList.route, // "product_list/{categoryId}"
+                route = AppScreens.ProductList.route,
                 arguments = listOf(
-                    navArgument("categoryId") { type = NavType.IntType } // Decimos que es un Número
+                    navArgument("categoryId") { type = NavType.IntType },
+                    navArgument("categoryName") { type = NavType.StringType } // <--- Agregamos esto
                 )
             ) { backStackEntry ->
-                // 1. Recuperamos el ID de la "mochila" (argumentos)
                 val categoryId = backStackEntry.arguments?.getInt("categoryId") ?: 0
-                // 2. Llamamos a la pantalla nueva pasándole el ID
+                val categoryName = backStackEntry.arguments?.getString("categoryName") ?: "Categoría"
+
                 ProductListScreen(
                     categoryId = categoryId,
+                    categoryName = categoryName,
                     onBack = { navController.popBackStack() },
                     onNavigateToDetail = { productId ->
-
                         navController.navigate(AppScreens.ProductDetail.createRoute(productId.toInt().toLong()))
                     }
                 )

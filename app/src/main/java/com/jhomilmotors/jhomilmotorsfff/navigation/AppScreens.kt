@@ -25,10 +25,9 @@ sealed class AppScreens(val route: String) {
     object WebViewContent : AppScreens("webview_content/{codigo}") {
         fun createRoute(codigo: String) = "webview_content/$codigo"
     }
-
-    object ProductList : AppScreens("product_list/{categoryId}") {
-        // Esta función auxiliar nos ayuda a crear la ruta fácilmente luego
-        fun createRoute(id: Int) = "product_list/$id"
+    //modificadoa qui
+    object ProductList : AppScreens("product_list/{categoryId}/{categoryName}") {
+        fun createRoute(categoryId: Int, categoryName: String) = "product_list/$categoryId/$categoryName"
     }
     object ProductDetail : AppScreens("product_detail/{productId}") {
         fun createRoute(id: Long) = "product_detail/$id"

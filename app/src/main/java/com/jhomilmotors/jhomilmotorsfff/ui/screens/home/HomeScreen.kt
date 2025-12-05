@@ -670,7 +670,7 @@ fun Principal(
                                             nombre = cat.nombre,
                                             iconUri = cat.urlImagenCompleta,
                                             onClick = {
-                                                navController.navigate(AppScreens.ProductList.createRoute(cat.id.toInt()))
+                                                navController.navigate(AppScreens.ProductList.createRoute(cat.id.toInt(), cat.nombre))
                                             }
                                         )
                                     )
